@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: iiwa_description
+    relative_path: urdf/iiwa7.urdf.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/iiwa7.srdf
+  CONFIG:
+    author_name: Peijie Xu
+    author_email: peijiexu@usc.edu
+    generated_timestamp: 1650064180

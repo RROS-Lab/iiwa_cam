@@ -1,0 +1,11 @@
+<launch>
+
+  <!-- run a modified moveit demo lauch file -->
+  <!-- the node "joint_state_publisher" is disabled -->
+  <include file="$(find iiwa_cam_moveit)/launch/demo.launch"/>
+
+  <node pkg="iiwa_cam" type="moveit_rviz_exec_node" name="moveit_rviz_exec_node" output="screen"/>
+  
+  <node pkg="iiwa_cam" type="moveit_rviz_state_receiver_node" name="moveit_rviz_state_receiver_node" output="screen"/>
+
+</launch>
