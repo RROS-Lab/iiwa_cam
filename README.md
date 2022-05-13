@@ -1,4 +1,4 @@
-# iiwa_cam Repo for Kuka
+# Kuka ROS Tutorial - The iiwa_cam Repository
 
 
 1. [kuka setup tutorial](wiki/kuka_ros_setup.md)

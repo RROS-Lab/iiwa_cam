@@ -3,4 +3,4 @@
 # IF YOU WANT TO CHANGE THE ROS ENVIRONMENT VARIABLES
 # USE THE rosinstall TOOL INSTEAD.
 # IF YOU CHANGE IT, USE rosinstall FOR THE CHANGES TO TAKE EFFECT
-- git: {local-name: src/iiwa_stack, uri: 'https://github.com/IFL-CAMP/iiwa_stack.git'}
+- git: {local-name: src/iiwa_stack_cam, uri: 'https://github.com/RROS-Lab/iiwa_stack_cam.git'}

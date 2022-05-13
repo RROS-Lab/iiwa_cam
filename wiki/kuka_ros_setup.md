@@ -43,15 +43,14 @@ Then run
 `source ~/.bashrc`
 
 1. **Setup ROS workspace**   
-// TODO  we have our own iiwa_cam_stack now  
 run command  
 `sh scripts/kuka_env_setup.sh`  
-**NOTE** : if you want set your worksapce somewhere else, skip this step; otherwise, do this step and skip the steps bellow to [Sunrise side](#sunrise_side)
+**NOTE** : this command will create a new ros workspace in directory `~/` if you want set your worksapce somewhere else, skip this step; otherwise, do this step and skip the steps bellow to [Sunrise side](#sunrise_side)
 
 1. **Clone iiwa_stack repository to your workspace** (you can omit the first 2 commands if you already have one) :   
-`mkdir iiwa_stack_ws && cd iiwa_stack_ws && mkdir src`          
+`mkdir -p iiwa_stack_ws/src && cd ..`          
 `catkin_init_workspace`   
-`git clone https://github.com/IFL-CAMP/iiwa_stack.git src/iiwa_stack` 
+`git clone https://github.com/RROS-Lab/iiwa_stack_cam.git src/iiwa_stack_cam` 
 
 
 1. **Download the dependences** :      
@@ -60,8 +59,8 @@ run command
 1. **Build the workspace** :  
 `catkin build`  
 if you failed with error message:   
-*Unable to find either executable 'empy' or Python module 'em'...  try
-  installing the package 'python-empy'*  
+*Unable to find either executable 'empy' or Python module 'em'...  
+try installing the package 'python-empy'*  
 try:  ([Ref](https://github.com/ysl208/iRoPro/issues/59))  
 `catkin build -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.7m`  
 
