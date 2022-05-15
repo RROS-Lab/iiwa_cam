@@ -1,5 +1,6 @@
 #pragma once
 #include <actionlib/client/simple_action_client.h>
+#include <iiwa_msgs/GetFrames.h>
 #include <iiwa_msgs/JointPosition.h>
 #include <iiwa_msgs/MoveAlongSplineAction.h>
 #include <iiwa_msgs/MoveToCartesianPoseAction.h>
@@ -207,8 +208,9 @@ class Kuka {
   void get_recorded_frames() {  // TODO
   }
 
-  void set_vel_acc_drop(const double vel = 0.1, const double acc = 0.1,
-                        const double override_acc = 1.0) {
+  void set_vel_acc_drop(
+      const double vel = 0.1, const double acc = 0.1,
+      const double override_acc = 1.0) {  // TODO not tested yet
     if (vel == m_joint_vel_drop && acc == m_joint_acc_drop &&
         override_acc == m_joint_over_acc_drop) {
       return;
@@ -225,12 +227,15 @@ class Kuka {
     joint_vel_msg.request.joint_relative_acceleration = acc;
     joint_vel_msg.request.override_joint_acceleration = override_acc;
 
-
-    std::cout << "set droppable Joint Velocity to " << vel << " --> " << std::flush;
+    std::cout << "set droppable Joint Velocity to " << vel << " --> "
+              << std::flush;
     ss_joint_vel_client.call(joint_vel_msg);
     std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
               << std::endl;
   }
+
+  void set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
+                            const double override_acc = 1.0) {//TODO}
 
   /**
    * @brief Set the velocity and accelaration of joint space. This function
