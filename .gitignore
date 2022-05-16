@@ -57,3 +57,5 @@ CATKIN_IGNORE
 .rosinstall.bak
 
 .catkin_tools/*
+
+.gitignore
