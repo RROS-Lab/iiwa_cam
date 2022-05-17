@@ -235,7 +235,8 @@ class Kuka {
   }
 
   void set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
-                            const double override_acc = 1.0) {//TODO}
+                            const double override_acc = 1.0) {//TODO
+                            }
 
   /**
    * @brief Set the velocity and accelaration of joint space. This function
