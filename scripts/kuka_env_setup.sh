@@ -1,6 +1,6 @@
-mkdir -p ~/iiwa_ws/src
-cp iiwa_cam ~/iiwa_ws/src/iiwa_cam/iiwa_cam
-cp iiwa_cam_moveit ~/iiwa_ws/src/iiwa_cam/iiwa_cam_moveit
+mkdir -p ~/iiwa_ws/src/iiwa_cam
+cp -r iiwa_cam ~/iiwa_ws/src/iiwa_cam/
+cp -r iiwa_cam_moveit ~/iiwa_ws/src/iiwa_cam/
 cp scripts/.rosinstall ~/iiwa_ws
 
 cd ~/iiwa_ws
