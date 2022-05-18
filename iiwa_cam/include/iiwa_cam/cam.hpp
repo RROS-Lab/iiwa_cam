@@ -136,6 +136,10 @@ class Kuka {
   double m_joint_acc_drop = 0;
   double m_joint_over_acc_drop = 0;
 
+  double m_ss_vel_lin_drop = 0;
+  double m_ss_acc_lin_drop = 0;
+  double m_ss_over_acc_lin_drop = 0;
+
   std::string iiwa_name;
 
  public:
@@ -192,6 +196,7 @@ class Kuka {
 
     set_vel_acc();
     set_cart_traj_vel_acc();
+    // TODO: add droppable velocity setting
   }
 
   ~Kuka() {
@@ -236,7 +241,28 @@ class Kuka {
 
   void set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
                             const double override_acc = 1.0) {//TODO
-                            }
+    if (vel == m_ss_vel_lin_drop && acc == m_ss_acc_lin_drop &&
+        override_acc == m_ss_over_acc_lin_drop) {
+      return;
+    } else {
+      m_ss_vel_lin_drop = vel;
+      m_ss_acc_lin_drop = acc;
+      m_ss_over_acc_lin_drop = override_acc;
+    }
+    // service msg definition
+    static iiwa_msgs::SetSmartServoLinSpeedLimits ss_lin_vel_msg;
+
+    // set joint velocity limit
+    ss_lin_vel_msg.request.joint_relative_velocity = vel;
+    ss_lin_vel_msg.request.joint_relative_acceleration = acc;
+    ss_lin_vel_msg.request.override_joint_acceleration = override_acc;
+
+    std::cout << "set droppable Lin Velocity to " << vel << " --> "
+              << std::flush;
+    ss_lin_vel_client.call(ss_lin_vel_msg);
+    std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
+              << std::endl;
+  }
 
   /**
    * @brief Set the velocity and accelaration of joint space. This function
@@ -403,7 +429,8 @@ class Kuka {
     // set goal
     auto &poseStamped =
         cartesian_pos_act.action_goal.goal.cartesian_pose.poseStamped;
-    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = 5;
+    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = 5; // TODO: try other status, see pdf 391
+
     // set frame id (important!)
     poseStamped.header.frame_id = "iiwa_link_0";
 
@@ -503,7 +530,7 @@ class Kuka {
     // action msg difinition
     iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
 
-    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = 5;
+    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = 5;  // TODO: try other status, see pdf 391
 
     // set goal
     auto &poseStamped =
