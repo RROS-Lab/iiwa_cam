@@ -97,6 +97,13 @@ class Frame {
     joint_pos = std::move(joint_position);
     return true;
   }
+
+  bool set_cart_pos(const std::vector<double> &cart_position) {
+    if (cart_position.size() != 7)
+      return false;
+    cart_pos = std::move(cart_position);
+    return true;
+  }
 };
 
 class Kuka {
@@ -141,6 +148,28 @@ class Kuka {
   double m_ss_over_acc_lin_drop = 0;
 
   std::string iiwa_name;
+
+ private:
+  iiwa_msgs::MoveToCartesianPoseAction build_cart_act(
+      const geometry_msgs::Pose &pose) {
+    // action msg difinition
+    iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
+
+    // set goal
+    auto &poseStamped =
+        cartesian_pos_act.action_goal.goal.cartesian_pose.poseStamped;
+
+    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = 5;
+    // TODO: try other status, see pdf 391
+
+    // set frame id (important!)
+    poseStamped.header.frame_id = "iiwa_link_0";
+
+    // set cartesian position
+    poseStamped.pose = pose;
+
+    return cartesian_pos_act;
+  }
 
  public:
   Kuka() { rob_init("iiwa"); }
@@ -239,30 +268,30 @@ class Kuka {
               << std::endl;
   }
 
-  void set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
-                            const double override_acc = 1.0) {//TODO
-    if (vel == m_ss_vel_lin_drop && acc == m_ss_acc_lin_drop &&
-        override_acc == m_ss_over_acc_lin_drop) {
-      return;
-    } else {
-      m_ss_vel_lin_drop = vel;
-      m_ss_acc_lin_drop = acc;
-      m_ss_over_acc_lin_drop = override_acc;
+  /*
+    void set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
+                              const double override_acc = 1.0) {
+      if (vel == m_ss_vel_lin_drop && acc == m_ss_acc_lin_drop &&
+          override_acc == m_ss_over_acc_lin_drop) {
+        return;
+      } else {
+        m_ss_vel_lin_drop = vel;
+        m_ss_acc_lin_drop = acc;
+        m_ss_over_acc_lin_drop = override_acc;
+      }
+      // service msg definition
+      static iiwa_msgs::SetSmartServoLinSpeedLimits ss_lin_vel_msg;
+
+      // set joint velocity limit
+      ss_lin_vel_msg.request.max_cartesian_velocity;  // TODO
+
+      std::cout << "set droppable Lin Velocity to " << vel << " --> "
+                << std::flush;
+      ss_lin_vel_client.call(ss_lin_vel_msg);
+      std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
+                << std::endl;
     }
-    // service msg definition
-    static iiwa_msgs::SetSmartServoLinSpeedLimits ss_lin_vel_msg;
-
-    // set joint velocity limit
-    ss_lin_vel_msg.request.joint_relative_velocity = vel;
-    ss_lin_vel_msg.request.joint_relative_acceleration = acc;
-    ss_lin_vel_msg.request.override_joint_acceleration = override_acc;
-
-    std::cout << "set droppable Lin Velocity to " << vel << " --> "
-              << std::flush;
-    ss_lin_vel_client.call(ss_lin_vel_msg);
-    std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-              << std::endl;
-  }
+  */
 
   /**
    * @brief Set the velocity and accelaration of joint space. This function
@@ -423,21 +452,7 @@ class Kuka {
    */
   void move_cart_ptp(const geometry_msgs::Pose &pose,
                      const double sleep_time = 500.0) {
-    // action msg difinition
-    iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
-
-    // set goal
-    auto &poseStamped =
-        cartesian_pos_act.action_goal.goal.cartesian_pose.poseStamped;
-    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = 5; // TODO: try other status, see pdf 391
-
-    // set frame id (important!)
-    poseStamped.header.frame_id = "iiwa_link_0";
-
-    // set cartesian position
-    poseStamped.pose = pose;
-
-    cartesian_pos_ptp_client->sendGoal(cartesian_pos_act.action_goal.goal);
+    cartesian_pos_ptp_client->sendGoal(build_cart_act(pose).action_goal.goal);
     // cartesian_pos_client.sendGoalAndWait();
 
     ros::Duration(sleep_time * 1e-3).sleep();
@@ -511,11 +526,11 @@ class Kuka {
    * @param pose
    * @param sleep_time default = 500 ms
    */
-  void move_cart_lin(geometry_msgs::Pose pose,
+  void move_cart_lin(geometry_msgs::Pose &pose,
                      const double sleep_time = 500.0) {
-    move_cart_lin(pose.position.x, pose.position.y, pose.position.z,
-                  pose.orientation.w, pose.orientation.x, pose.orientation.y,
-                  pose.orientation.z, sleep_time);
+    cartesian_pos_lin_client->sendGoal(build_cart_act(pose).action_goal.goal);
+
+    ros::Duration(sleep_time * 1e-3).sleep();
   }
 
   /**
@@ -527,30 +542,16 @@ class Kuka {
   void move_cart_lin(const double posX, const double posY, const double posZ,
                      const double oriW, const double oriX, const double oriY,
                      const double oriZ, const double sleep_time = 500.0) {
-    // action msg difinition
-    iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
+    geometry_msgs::Pose pose;
+    pose.position.x = posX;
+    pose.position.y = posY;
+    pose.position.z = posZ;
+    pose.orientation.w = oriW;
+    pose.orientation.x = oriX;
+    pose.orientation.y = oriY;
+    pose.orientation.z = oriZ;
 
-    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = 5;  // TODO: try other status, see pdf 391
-
-    // set goal
-    auto &poseStamped =
-        cartesian_pos_act.action_goal.goal.cartesian_pose.poseStamped;
-
-    // set frame id (important!)
-    poseStamped.header.frame_id = "iiwa_link_0";
-
-    // set cartesian position
-    poseStamped.pose.position.x = posX;
-    poseStamped.pose.position.y = posY;
-    poseStamped.pose.position.z = posZ;
-    poseStamped.pose.orientation.w = oriW;
-    poseStamped.pose.orientation.x = oriX;
-    poseStamped.pose.orientation.y = oriY;
-    poseStamped.pose.orientation.z = oriZ;
-
-    cartesian_pos_lin_client->sendGoal(cartesian_pos_act.action_goal.goal);
-
-    ros::Duration(sleep_time * 1e-3).sleep();
+    move_cart_lin(pose, sleep_time);
   }
 
   /**
