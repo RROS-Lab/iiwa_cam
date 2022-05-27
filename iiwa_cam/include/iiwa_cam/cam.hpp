@@ -159,7 +159,11 @@ class Kuka {
     auto &poseStamped =
         cartesian_pos_act.action_goal.goal.cartesian_pose.poseStamped;
 
-    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = 5;
+    int status = 2;
+    if (pose.position.x < 0 && std::abs(pose.position.y) < 0.02)
+      status = 5;
+
+    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = status;
     // TODO: try other status, see pdf 391
 
     // set frame id (important!)
@@ -268,30 +272,29 @@ class Kuka {
               << std::endl;
   }
 
-  /*
-    void set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
-                              const double override_acc = 1.0) {
-      if (vel == m_ss_vel_lin_drop && acc == m_ss_acc_lin_drop &&
-          override_acc == m_ss_over_acc_lin_drop) {
-        return;
-      } else {
-        m_ss_vel_lin_drop = vel;
-        m_ss_acc_lin_drop = acc;
-        m_ss_over_acc_lin_drop = override_acc;
-      }
-      // service msg definition
-      static iiwa_msgs::SetSmartServoLinSpeedLimits ss_lin_vel_msg;
-
-      // set joint velocity limit
-      ss_lin_vel_msg.request.max_cartesian_velocity;  // TODO
-
-      std::cout << "set droppable Lin Velocity to " << vel << " --> "
-                << std::flush;
-      ss_lin_vel_client.call(ss_lin_vel_msg);
-      std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-                << std::endl;
+  void set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
+                            const double override_acc = 1.0) {
+    if (vel == m_ss_vel_lin_drop && acc == m_ss_acc_lin_drop &&
+        override_acc == m_ss_over_acc_lin_drop) {
+      return;
+    } else {
+      m_ss_vel_lin_drop = vel;
+      m_ss_acc_lin_drop = acc;
+      m_ss_over_acc_lin_drop = override_acc;
     }
-  */
+    // service msg definition
+    static iiwa_msgs::SetSmartServoLinSpeedLimits ss_lin_vel_msg;
+
+    // set joint velocity limit
+    ss_lin_vel_msg.request.max_cartesian_velocity.linear.x = vel;
+    ss_lin_vel_msg.request.max_cartesian_velocity.linear.y = acc;
+    ss_lin_vel_msg.request.max_cartesian_velocity.linear.z = override_acc;
+    std::cout << "set droppable Lin Velocity to " << vel << " --> "
+              << std::flush;
+    ss_lin_vel_client.call(ss_lin_vel_msg);
+    std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
+              << std::endl;
+  }
 
   /**
    * @brief Set the velocity and accelaration of joint space. This function
@@ -618,6 +621,7 @@ class Kuka {
     }
     // spline_msg.segments.pop_back();
     // press_to_go();
+    move_joint_ptp(traj_vec.begin()->positions);
 
     joint_spline_pub.publish(spline_msg);
   }

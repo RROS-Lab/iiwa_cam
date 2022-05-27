@@ -21,14 +21,13 @@ int main(int argc, char **argv) {
     cam::read_traj_cart(argv[1], waypoints);
 
   } else {
-    kuka.move_cart_ptp(-0.52, 0, 0.15, 0, 0, 1, 0);
     geometry_msgs::Pose target_pose;
     target_pose.orientation.x = 0;
     target_pose.orientation.y = 1;
     target_pose.orientation.z = 0;
     target_pose.orientation.w = 0;
 
-    target_pose.position.x = -0.52;
+    target_pose.position.x = 0.52;
     target_pose.position.y = 0.0;
     target_pose.position.z = 0.15;
 
@@ -41,6 +40,7 @@ int main(int argc, char **argv) {
       target_pose.position.y = centerB + radius * sin(th);
       waypoints.emplace_back(target_pose);
     }
+    kuka.move_cart_ptp(waypoints[0]);
   }
 
   std::cout << "cartesian waypoints size: " << waypoints.size() << std::endl;
