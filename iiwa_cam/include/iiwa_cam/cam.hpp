@@ -80,19 +80,19 @@ class Frame {
  private:
   friend class Kuka;
 
-  int joints;
+  int joints_num;
   std::vector<double> joint_pos;
   std::vector<double> cart_pos = std::vector<double>(7);  // X Y Z [W X Y Z]
 
  public:
   Frame() = default;
-  Frame(int total_joints) : joints(total_joints), joint_pos(total_joints) {}
+  Frame(int total_joints) : joints_num(total_joints), joint_pos(total_joints) {}
 
   const std::vector<double> &get_cartesian_pos() const { return cart_pos; }
   const std::vector<double> &get_joint_pos() const { return joint_pos; }
 
   bool set_joint_pos(const std::vector<double> &joint_position) {
-    if (joint_position.size() != joints)
+    if (joint_position.size() != joints_num)
       return false;
     joint_pos = std::move(joint_position);
     return true;
@@ -112,6 +112,8 @@ class Kuka {
   ros::ServiceClient joint_vel_client;
   ros::ServiceClient ss_joint_vel_client;
   ros::ServiceClient ss_lin_vel_client;
+
+  ros::ServiceClient frames_client;
 
   ros::Publisher joint_spline_pub;
   ros::Publisher joint_pos_droppable_pub;
@@ -151,7 +153,7 @@ class Kuka {
 
  private:
   iiwa_msgs::MoveToCartesianPoseAction build_cart_act(
-      const geometry_msgs::Pose &pose) {
+      const geometry_msgs::Pose &pose, int status = -1) {
     // action msg difinition
     iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
 
@@ -159,12 +161,15 @@ class Kuka {
     auto &poseStamped =
         cartesian_pos_act.action_goal.goal.cartesian_pose.poseStamped;
 
-    int status = 2;
-    if (pose.position.x < 0 && std::abs(pose.position.y) < 0.02)
-      status = 5;
+    if (status == -1) {
+      status = 2;
+      if (pose.position.x < 0 && std::abs(pose.position.y) < 0.02)
+        status = 5;
+    }
 
-    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = status;
-    // TODO: try other status, see pdf 391
+    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status =
+        status;
+    // see pdf 391
 
     // set frame id (important!)
     poseStamped.header.frame_id = "iiwa_link_0";
@@ -201,6 +206,9 @@ class Kuka {
     ss_lin_vel_client =
         nh.serviceClient<iiwa_msgs::SetSmartServoLinSpeedLimits>(
             iiwa_name + "/configuration/setSmartServoLinLimits");
+
+    frames_client = nh.serviceClient<iiwa_msgs::GetFrames>(
+        iiwa_name + "/configuration/GetFrames");
 
     joint_pos_client =
         new actionlib::SimpleActionClient<iiwa_msgs::MoveToJointPositionAction>(
@@ -244,11 +252,14 @@ class Kuka {
    *
    */
   void get_recorded_frames() {  // TODO
+    iiwa_msgs::GetFrames frame_msg;
+    frames_client.call(frame_msg);
+    std::cout << "get " << frame_msg.response.frame_size << std::endl;
   }
 
-  void set_vel_acc_drop(
-      const double vel = 0.1, const double acc = 0.1,
-      const double override_acc = 1.0) {  // TODO not tested yet
+  // TODO not tested yet
+  void set_vel_acc_drop(const double vel = 0.1, const double acc = 0.1,
+                        const double override_acc = 1.0) {
     if (vel == m_joint_vel_drop && acc == m_joint_acc_drop &&
         override_acc == m_joint_over_acc_drop) {
       return;
@@ -453,12 +464,17 @@ class Kuka {
    * @param pose
    * @param sleep_time default = 500 ms
    */
-  void move_cart_ptp(const geometry_msgs::Pose &pose,
+  void move_cart_ptp(const geometry_msgs::Pose &pose, const int status = -1,
                      const double sleep_time = 500.0) {
-    cartesian_pos_ptp_client->sendGoal(build_cart_act(pose).action_goal.goal);
-    // cartesian_pos_client.sendGoalAndWait();
-
-    ros::Duration(sleep_time * 1e-3).sleep();
+    if (status == -1) {
+      // TODO: add function that let controller do the status decision, move and
+      // sleep
+    } else {
+      cartesian_pos_ptp_client->sendGoal(
+          build_cart_act(pose, -1)
+              .action_goal.goal);  // TODO: change hardcode -1 to status
+      ros::Duration(sleep_time * 1e-3).sleep();
+    }
   }
 
   /**
@@ -470,7 +486,8 @@ class Kuka {
    */
   void move_cart_ptp(const double posX, const double posY, const double posZ,
                      const double oriW, const double oriX, const double oriY,
-                     const double oriZ, const double sleep_time = 500.0) {
+                     const double oriZ, const int status = -1,
+                     const double sleep_time = 500.0) {
     geometry_msgs::Pose pose;
     pose.position.x = posX;
     pose.position.y = posY;
@@ -479,7 +496,7 @@ class Kuka {
     pose.orientation.x = oriX;
     pose.orientation.y = oriY;
     pose.orientation.z = oriZ;
-    move_cart_ptp(pose, sleep_time);
+    move_cart_ptp(pose, status, sleep_time);
   }
 
   /**
@@ -529,11 +546,18 @@ class Kuka {
    * @param pose
    * @param sleep_time default = 500 ms
    */
-  void move_cart_lin(geometry_msgs::Pose &pose,
+  void move_cart_lin(geometry_msgs::Pose &pose, const int status = -1,
                      const double sleep_time = 500.0) {
-    cartesian_pos_lin_client->sendGoal(build_cart_act(pose).action_goal.goal);
+    if (status == -1) {
+      // TODO: add function that let controller do the status decision, move and
+      // sleep
+    } else {
+      cartesian_pos_lin_client->sendGoal(
+          build_cart_act(pose, -1)
+              .action_goal.goal);  // TODO: change hardcode -1 to status
 
-    ros::Duration(sleep_time * 1e-3).sleep();
+      ros::Duration(sleep_time * 1e-3).sleep();
+    }
   }
 
   /**
@@ -544,7 +568,8 @@ class Kuka {
    */
   void move_cart_lin(const double posX, const double posY, const double posZ,
                      const double oriW, const double oriX, const double oriY,
-                     const double oriZ, const double sleep_time = 500.0) {
+                     const double oriZ, const int status = -1,
+                     const double sleep_time = 500.0) {
     geometry_msgs::Pose pose;
     pose.position.x = posX;
     pose.position.y = posY;
@@ -554,7 +579,7 @@ class Kuka {
     pose.orientation.y = oriY;
     pose.orientation.z = oriZ;
 
-    move_cart_lin(pose, sleep_time);
+    move_cart_lin(pose, status, sleep_time);
   }
 
   /**
@@ -593,7 +618,8 @@ class Kuka {
    *
    * @param trajectory
    */
-  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory) {
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
+                      const double velocity = 0.1) {
     iiwa_msgs::Spline spline_msg;
     const auto &traj_vec = trajectory.joint_trajectory.points;
 
@@ -619,6 +645,10 @@ class Kuka {
       spline_msg.segments.emplace_back(seg);
       traj_vec_iter++;
     }
+
+    spline_msg.segments.at(0).point.poseStamped.header.frame_id =
+        to_string(velocity);
+
     // spline_msg.segments.pop_back();
     // press_to_go();
     move_joint_ptp(traj_vec.begin()->positions);
