@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<robot name="gg" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <link name="world" />
+
+
+    <!-- KUKA -->
+
+    <xacro:include filename="$(find iiwa_description)/urdf/materials.xacro" />
+    <xacro:include filename="$(find iiwa_description)/urdf/iiwa7.xacro" />
+    <xacro:include filename="$(find indy7_robotiq_description)/urdf/prefix_robotiq_arg85_description.xacro" />
+
+    <xacro:arg name="hardware_interface" default="PositionJointInterface" />
+    <xacro:arg name="robot_name_1" default="iiwa1" />
+    <xacro:arg name="robot_name_2" default="iiwa2" />
+
+
+    <!--iiwa1-->
+    <xacro:iiwa7 hardware_interface="$(arg hardware_interface)" robot_name="$(arg robot_name_1)" parent="world">
+        <origin xyz="-0.2 0.8 0" rpy="0 0 0" />
+    </xacro:iiwa7>
+    <xacro:robotiq_arg85 robot_name="$(arg robot_name_1)_" parent="$(arg robot_name_1)_link_ee" />
+
+    <!--iiwa2-->
+    <xacro:iiwa7 hardware_interface="$(arg hardware_interface)" robot_name="$(arg robot_name_2)" parent="world">
+        <origin xyz="0.61 0.838 0" rpy="0 0 3.14" />
+    </xacro:iiwa7>
+    <xacro:robotiq_arg85 robot_name="$(arg robot_name_2)_" parent="$(arg robot_name_2)_link_ee" />
+
+</robot>
