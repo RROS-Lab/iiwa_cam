@@ -121,8 +121,9 @@ class Kuka {
   ros::ServiceClient frames_client;
 
   ros::Publisher joint_spline_pub;
-  ros::Publisher joint_pos_droppable_pub;
-  ros::Publisher cartesian_pos_droppable_pub;
+  ros::Publisher joint_ptp_droppable_pub;
+  ros::Publisher cart_ptp_droppable_pub;
+  ros::Publisher cart_lin_droppable_pub;
 
   actionlib::SimpleActionClient<iiwa_msgs::MoveToJointPositionAction>
       *joint_pos_client;
@@ -189,7 +190,7 @@ class Kuka {
 
  public:
   Kuka() { rob_init("iiwa"); }
-  Kuka(std::string rob_name) { rob_init(rob_name); }
+  Kuka(const std::string &rob_name) { rob_init(rob_name); }
 
   void rob_init(const std::string &rob_name) {
     ros::NodeHandle nh;
@@ -236,11 +237,14 @@ class Kuka {
     joint_spline_pub =
         nh.advertise<iiwa_msgs::Spline>(iiwa_name + "/command/JointSpline", 1);
 
-    joint_pos_droppable_pub = nh.advertise<iiwa_msgs::JointPosition>(
+    joint_ptp_droppable_pub = nh.advertise<iiwa_msgs::JointPosition>(
         iiwa_name + "/command/JointPosition", 1);
 
-    cartesian_pos_droppable_pub = nh.advertise<geometry_msgs::PoseStamped>(
+    cart_ptp_droppable_pub = nh.advertise<geometry_msgs::PoseStamped>(
         iiwa_name + "/command/CartesianPose", 1);
+
+    cart_lin_droppable_pub = nh.advertise<geometry_msgs::PoseStamped>(
+        iiwa_name + "/command/CartesianPoseLin", 1);
 
     set_vel_acc();
     set_cart_traj_vel_acc();
@@ -267,7 +271,9 @@ class Kuka {
   }
 
   /**
-   * @brief Set the vel acc drop object
+   * @brief Set the velocity, accelaration, override accelaration(refer its
+   * description in the KUKA manuals) of droppable move including
+   * move_joint_ptp_drop(), move_cart_ptp_drop()
    *
    * @param vel
    * @param acc
@@ -277,7 +283,7 @@ class Kuka {
                         const double override_acc = 1.0) {
     if (vel == m_joint_vel_drop && acc == m_joint_acc_drop &&
         override_acc == m_joint_over_acc_drop) {
-      return;
+      return true;
     } else {
       m_joint_vel_drop = vel;
       m_joint_acc_drop = acc;
@@ -293,20 +299,31 @@ class Kuka {
 
     ss_joint_vel_client.call(joint_vel_msg);
 
-    if (!m_print_info)
-      return joint_vel_msg.response.success;
-    std::cout << "set droppable Joint Velocity to " << vel << " --> "
-              << std::flush;
-    std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-              << std::endl;
+    if (m_print_info) {
+      std::cout << "set droppable Joint Velocity to " << vel << " --> "
+                << std::flush;
+      std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
+                << std::endl;
+    }
+
+    return joint_vel_msg.response.success;
   }
-  
-  // TODO: not test yet
+
+  /**
+   * @brief Set the velocity, accelaration, override accelaration(refer its
+   * description in the KUKA manuals) of droppable cartesian linear move: move_cart_lin_drop()
+   * 
+   * @param vel 
+   * @param acc 
+   * @param override_acc 
+   * @return true when succeed
+   * @return false when failed
+   */
   bool set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
                             const double override_acc = 1.0) {
     if (vel == m_ss_vel_lin_drop && acc == m_ss_acc_lin_drop &&
         override_acc == m_ss_over_acc_lin_drop) {
-      return;
+      return true;
     } else {
       m_ss_vel_lin_drop = vel;
       m_ss_acc_lin_drop = acc;
@@ -321,13 +338,13 @@ class Kuka {
     ss_lin_vel_msg.request.max_cartesian_velocity.linear.z = override_acc;
 
     ss_lin_vel_client.call(ss_lin_vel_msg);
-    if (!m_print_info)
-      return ss_lin_vel_msg.response.success;
-
-    std::cout << "set droppable Lin Velocity to " << vel << " --> "
-              << std::flush;
-    std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-              << std::endl;
+    if (m_print_info) {
+      std::cout << "set droppable Lin Velocity to " << vel << " --> "
+                << std::flush;
+      std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
+                << std::endl;
+    }
+    return ss_lin_vel_msg.response.success;
   }
 
   /**
@@ -339,7 +356,7 @@ class Kuka {
    */
   bool set_vel_acc(const double vel = 0.1, const double acc = 0.1) {
     if (vel == m_joint_vel && acc == m_joint_acc) {
-      return;
+      return true;
     } else {
       m_joint_vel = vel;
       m_joint_acc = acc;
@@ -352,12 +369,13 @@ class Kuka {
     joint_vel_msg.request.joint_relative_acceleration = acc;
 
     joint_vel_client.call(joint_vel_msg);
-    if (!m_print_info)
-      return joint_vel_msg.response.success;
+    if (m_print_info) {
+      std::cout << "set Joint Velocity to " << vel << " --> " << std::flush;
+      std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
+                << std::endl;
+    }
 
-    std::cout << "set Joint Velocity to " << vel << " --> " << std::flush;
-    std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-              << std::endl;
+    return joint_vel_msg.response.success;
   }
 
   /**
@@ -383,7 +401,7 @@ class Kuka {
         m_cart_ori_acc == maxOrientationAcceleration &&
         m_cart_pos_jerk == maxCartesianJerk &&
         m_cart_ori_jerk == maxOrientationJerk) {
-      return;
+      return true;
     } else {
       m_cart_pos_vel = maxCartesianVelocity;
       m_cart_ori_vel = maxOrientationVelocity;
@@ -405,16 +423,15 @@ class Kuka {
 
     cart_spline_vel_client.call(cart_vel_msg);
 
-    if (!m_print_info)
-      return cart_vel_msg.response.success;
-
-    std::cout << "set Cartesian PTP limits: \n"
-              << maxCartesianVelocity << ", " << maxOrientationVelocity << ", "
-              << maxCartesianAcceleration << ", " << maxOrientationAcceleration
-              << ", " << maxCartesianJerk << ", " << maxOrientationJerk << " "
-              << "--> "
-              << (cart_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-              << std::endl;
+    if (m_print_info)
+      std::cout << "set Cartesian PTP limits: \n(" << maxCartesianVelocity
+                << ", " << maxOrientationVelocity << ", "
+                << maxCartesianAcceleration << ", "
+                << maxOrientationAcceleration << ", " << maxCartesianJerk
+                << ", " << maxOrientationJerk << ") --> "
+                << (cart_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
+                << std::endl;
+    return cart_vel_msg.response.success;
   }
 
   /**
@@ -437,10 +454,10 @@ class Kuka {
    * @param joint_positions j1 ~ j7
    * @param sleep_time default = 500 ms
    */
-  void move_joint_ptp(const double j1, const double j2, const double j3,
-                      const double j4, const double j5, const double j6,
-                      const double j7, const double sleep_time = 500.0) {
-    iiwa_msgs::MoveToJointPositionAction joint_pos_act;
+  void move_joint_ptp(const double &j1, const double &j2, const double &j3,
+                      const double &j4, const double &j5, const double &j6,
+                      const double &j7, const double sleep_time = 500.0) {
+    static iiwa_msgs::MoveToJointPositionAction joint_pos_act;
     auto &joint_pos = joint_pos_act.action_goal.goal.joint_position;
     joint_pos.position.a1 = j1;
     joint_pos.position.a2 = j2;
@@ -472,10 +489,10 @@ class Kuka {
    *
    * @param joint_positions j1 ~ j7
    */
-  void move_joint_ptp_drop(const double j1, const double j2, const double j3,
-                           const double j4, const double j5, const double j6,
-                           const double j7) {
-    iiwa_msgs::JointPosition joint_pos;
+  void move_joint_ptp_drop(const double &j1, const double &j2, const double &j3,
+                           const double &j4, const double &j5, const double &j6,
+                           const double &j7) {
+    static iiwa_msgs::JointPosition joint_pos;
     joint_pos.position.a1 = j1;
     joint_pos.position.a2 = j2;
     joint_pos.position.a3 = j3;
@@ -483,7 +500,7 @@ class Kuka {
     joint_pos.position.a5 = j5;
     joint_pos.position.a6 = j6;
     joint_pos.position.a7 = j7;
-    joint_pos_droppable_pub.publish(joint_pos);
+    joint_ptp_droppable_pub.publish(joint_pos);
   }
 
   /**
@@ -510,11 +527,11 @@ class Kuka {
    * @param status
    * @param sleep_time default = 500 ms
    */
-  void move_cart_ptp(const double posX, const double posY, const double posZ,
-                     const double oriW, const double oriX, const double oriY,
-                     const double oriZ, const int status = UNDEFINED_STATUS,
+  void move_cart_ptp(const double &posX, const double &posY, const double &posZ,
+                     const double &oriW, const double &oriX, const double &oriY,
+                     const double &oriZ, const int status = UNDEFINED_STATUS,
                      const double sleep_time = 500.0) {
-    geometry_msgs::Pose pose;
+    static geometry_msgs::Pose pose;
     pose.position.x = posX;
     pose.position.y = posY;
     pose.position.z = posZ;
@@ -540,11 +557,34 @@ class Kuka {
     poseStamped.pose = pose;
     poseStamped.header.frame_id = "iiwa_link_0";
 
-    cartesian_pos_droppable_pub.publish(poseStamped);
+    cart_ptp_droppable_pub.publish(poseStamped);
   }
 
   /**
-   * @brief Move kuka point to point (LIN) assigned by cartesian space goal.
+   * @brief Move kuka point to point (PTP) assigned by cartesian space goal. The
+   * unit of cartesian position is meter. The robot will abandon previous goal
+   * when it receive a new goal, even when it is still executing.
+   *
+   * @param pose cartesian position X Y Z w x y z
+   * @param sleep_time default = 500 ms
+   */
+  void move_cart_ptp_drop(const double &posX, const double &posY,
+                          const double &posZ, const double &oriW,
+                          const double &oriX, const double &oriY,
+                          const double &oriZ) {
+    static geometry_msgs::Pose pose;
+    pose.position.x = posX;
+    pose.position.y = posY;
+    pose.position.z = posZ;
+    pose.orientation.w = oriW;
+    pose.orientation.x = oriX;
+    pose.orientation.y = oriY;
+    pose.orientation.z = oriZ;
+    move_cart_ptp_drop(pose);
+  }
+
+  /**
+   * @brief Move kuka linearly (LIN) assigned by cartesian space goal.
    * The unit of cartesian position is meter
    *
    * @param pose
@@ -567,11 +607,11 @@ class Kuka {
    * @param status
    * @param sleep_time default = 500 ms
    */
-  void move_cart_lin(const double posX, const double posY, const double posZ,
-                     const double oriW, const double oriX, const double oriY,
-                     const double oriZ, const int status = UNDEFINED_STATUS,
+  void move_cart_lin(const double &posX, const double &posY, const double &posZ,
+                     const double &oriW, const double &oriX, const double &oriY,
+                     const double &oriZ, const int status = UNDEFINED_STATUS,
                      const double sleep_time = 500.0) {
-    geometry_msgs::Pose pose;
+    static geometry_msgs::Pose pose;
     pose.position.x = posX;
     pose.position.y = posY;
     pose.position.z = posZ;
@@ -584,11 +624,31 @@ class Kuka {
   }
 
   /**
-   * @brief Move robot along a trajectory in cartesian space
+   * @brief Move kuka linearly (LIN) assigned by cartesian space goal. The
+   * unit of cartesian position is meter. The robot will abandon previous goal
+   * when it receive a new goal, even when it is still executing.
+   *
+   * @param pose cartesian position X Y Z w x y z
+   */
+  void move_cart_lin_drop(const geometry_msgs::Pose &pose) {
+    geometry_msgs::PoseStamped poseStamped;
+
+    // set cartesian position
+    poseStamped.pose = pose;
+    poseStamped.header.frame_id = "iiwa_link_0";
+
+    cart_lin_droppable_pub.publish(poseStamped);
+  }
+
+  /**
+   * @brief Move robot along a trajectory in cartesian space, use
+   * set_cart_traj_vel_acc() before this method to set speed
    *
    * @param trajectory
+   * @param status status of start point, default = -1
    */
-  void exe_cart_traj(const std::vector<geometry_msgs::Pose> &trajectory) {
+  void exe_cart_traj(const std::vector<geometry_msgs::Pose> &trajectory,
+                     const int status = UNDEFINED_STATUS) {
     iiwa_msgs::MoveAlongSplineAction spline_act_msg;
 
     spline_act_msg.action_goal.header.frame_id = "iiwa_link_0";
@@ -608,17 +668,16 @@ class Kuka {
 
       seg_vec.emplace_back(seg);
     }
-    
-    move_cart_ptp_drop(trajectory[0]);
+    // if this function doesnt work try change this code to move_cart_ptp()
+    move_cart_ptp(trajectory[0], status);
 
     cartesian_spline_client->sendGoal(spline_act_msg.action_goal.goal);
   }
 
-
   /**
    * @brief Move robot along a trajectory in joint space
-   * 
-   * @param trajectory 
+   *
+   * @param trajectory
    * @param velocity joint relative speed, default = 0.1
    */
   void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,

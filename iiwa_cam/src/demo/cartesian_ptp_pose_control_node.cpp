@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
   cam::Kuka kuka;
 
   // program start
-  // phase 1: set velocity and accelaration 
+  // phase 1: set velocity and accelaration
   kuka.set_vel_acc(0.25, 0.5);
 
   // phase 2: pick and put
@@ -19,11 +19,11 @@ int main(int argc, char* argv[]) {
   getchar();
   // pick
   kuka.move_cart_ptp(-0.42, 0, 0.2, 0, 0, 1, 0);
-  kuka.move_cart_ptp(0.0, 0.4, 0.2, 0, 1, 0, 0);
+  kuka.move_cart_ptp(0.0, 0.4, 0.2, 0, 1, 0, 0, 5);
   // put
-  kuka.move_cart_ptp(0.0, 0.4, 0.1, 0, 1, 0, 0);
+  kuka.move_cart_ptp(0.0, 0.4, 0.1, 0, 1, 0, 0, 5);
   // going back
-  kuka.move_cart_ptp(0.0, 0.4, 0.2, 0, 1, 0, 0);
+  kuka.move_cart_ptp(0.0, 0.4, 0.2, 0, 1, 0, 0, 5);
   kuka.move_cart_ptp(-0.42, 0, 0.2, 0, 0, 1, 0);
   kuka.move_cart_ptp(-0.42, 0, 0.1, 0, 0, 1, 0);
 

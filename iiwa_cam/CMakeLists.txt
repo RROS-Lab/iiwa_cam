@@ -145,6 +145,10 @@ include_directories(
 
 
 # demo files
+add_executable(cartesian_lin_drop_pose_control_node 
+  src/demo/cartesian_lin_drop_pose_control_node.cpp
+)
+
 add_executable(cartesian_lin_pose_control_node 
   src/demo/cartesian_lin_pose_control_node.cpp
 )
@@ -196,6 +200,10 @@ add_executable(unit_test
 ## Specify libraries to link a library or executable target against
 
 # demo files
+target_link_libraries(cartesian_lin_drop_pose_control_node
+  ${catkin_LIBRARIES}
+)
+
 target_link_libraries(cartesian_lin_pose_control_node
   ${catkin_LIBRARIES}
 )

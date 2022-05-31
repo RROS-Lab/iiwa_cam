@@ -1,6 +1,5 @@
 #include <cam.hpp>
 
-
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "cartesian_ptp_drop_pose_control_node");
 
@@ -9,11 +8,10 @@ int main(int argc, char *argv[]) {
 
   geometry_msgs::Pose pose;
 
-
   cam::press_to_go();
   pose.position.x = -0.52;
   pose.position.y = 0;
-  pose.position.z = 0.15;
+  pose.position.z = 0.18;
   pose.orientation.w = 0;
   pose.orientation.x = 0;
   pose.orientation.y = 1;
@@ -22,21 +20,12 @@ int main(int argc, char *argv[]) {
 
   cam::press_to_go();
   pose.position.x = 0;
-  pose.position.y = 0.4;
+  pose.position.y = 0.45;
   kuka.move_cart_ptp_drop(pose);
 
   cam::press_to_go();
-  pose.position.x = -0.44;
-  pose.position.y = 0;
-  pose.position.z = 1.02;
-  pose.orientation.w = 0.877597987651825;
-  pose.orientation.x = 0;
-  pose.orientation.y = -0.4793973364340466;
-  pose.orientation.z = 0;
-  kuka.move_cart_ptp_drop(pose);
+  kuka.move_cart_ptp_drop(-0.44, 0, 1.02, 0.8776, 0, -0.4794, 0);
 
-  std::cout << "ROS start spinning now ... Press Ctrl+C to stop" << std::endl;
-  ros::spin();
 
   ros::shutdown();
   return 0;
