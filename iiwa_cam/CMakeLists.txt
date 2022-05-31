@@ -149,6 +149,10 @@ add_executable(cartesian_lin_pose_control_node
   src/demo/cartesian_lin_pose_control_node.cpp
 )
 
+add_executable(cartesian_ptp_drop_pose_control_node 
+  src/demo/cartesian_ptp_drop_pose_control_node.cpp
+)
+
 add_executable(cartesian_ptp_pose_control_node 
   src/demo/cartesian_ptp_pose_control_node.cpp
 )
@@ -193,6 +197,10 @@ add_executable(unit_test
 
 # demo files
 target_link_libraries(cartesian_lin_pose_control_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(cartesian_ptp_drop_pose_control_node
   ${catkin_LIBRARIES}
 )
 
