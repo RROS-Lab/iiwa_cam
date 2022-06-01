@@ -182,6 +182,10 @@ add_executable(moveit_rviz_state_receiver_node
   src/utilities/moveit_rviz_state_receiver_node.cpp
 )
 
+add_executable(wrench_rviz_state_node
+  src/utilities/wrench_rviz_state_node.cpp
+)
+
 # unit test files
 add_executable(unit_test 
   src/test/unit_test.cpp
@@ -237,6 +241,11 @@ target_link_libraries(moveit_rviz_exec_node
 target_link_libraries(moveit_rviz_state_receiver_node
   ${catkin_LIBRARIES}
 )
+
+target_link_libraries(wrench_rviz_state_node
+  ${catkin_LIBRARIES}
+)
+
 
 # unit test files
 target_link_libraries(unit_test

@@ -1,3 +1,5 @@
+
+
 #include <cam.hpp>
 
 void test1() {
@@ -47,44 +49,13 @@ void test2(int argc, char *argv[]) {
   ros::shutdown();
 }
 
+
+
 void test3(int argc, char *argv[]) {
   ros::init(argc, argv, "cam_unit_test3");
+  ros::NodeHandle nh;
 
-  cam::Kuka kuka;
-  kuka.set_vel_acc_drop(0.5);
-
-  geometry_msgs::Pose pose;
-  pose.position.x = -0.42;
-  pose.position.y = 0;
-  pose.position.z = 0.2;
-  pose.orientation.w = 0;
-  pose.orientation.x = 0;
-  pose.orientation.y = 1;
-  pose.orientation.z = 0;
-
-  kuka.move_cart_ptp_drop(pose);
-
-  kuka.set_printer(true);
-  kuka.set_vel_acc_lin_drop();
-
-  cam::press_to_go();
-  pose.position.y = 0;
-  pose.position.z = 0.1;
-  kuka.move_cart_lin_drop(pose);
-
-  cam::press_to_go();
-  pose.position.y = 0.2;
-  pose.position.z = 0.2;
-  kuka.move_cart_lin_drop(pose);
-
-  cam::press_to_go();
-  kuka.set_vel_acc_lin_drop(0.3);
-  cam::press_to_go();
-  pose.position.y = 0;
-  pose.position.z = 0.2;
-  kuka.move_cart_lin_drop(pose);
-
-
+  ros::spin();
   ros::shutdown();
 }
 

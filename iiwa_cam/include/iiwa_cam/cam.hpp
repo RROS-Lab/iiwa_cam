@@ -1,6 +1,8 @@
 #pragma once
 #include <actionlib/client/simple_action_client.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <iiwa_msgs/CartesianPose.h>
+#include <iiwa_msgs/CartesianWrench.h>
 #include <iiwa_msgs/GetFrames.h>
 #include <iiwa_msgs/JointPosition.h>
 #include <iiwa_msgs/MoveAlongSplineAction.h>
@@ -258,10 +260,16 @@ class Kuka {
     delete cartesian_spline_client;
   }
 
+  /**
+   * @brief set the printer enabled status
+   *
+   * @param print set the parameter to true to print logger message
+   */
   void set_printer(const bool &print) { m_print_info = print; }
 
   /**
-   * @brief Get the saved frames from teaching pendant
+   * @brief Get the saved frames from teaching pendant, the Parent frames should
+   * be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
    *
    */
   void get_recorded_frames() {  // TODO
@@ -311,11 +319,12 @@ class Kuka {
 
   /**
    * @brief Set the velocity, accelaration, override accelaration(refer its
-   * description in the KUKA manuals) of droppable cartesian linear move: move_cart_lin_drop()
-   * 
-   * @param vel 
-   * @param acc 
-   * @param override_acc 
+   * description in the KUKA manuals) of droppable cartesian linear move:
+   * move_cart_lin_drop()
+   *
+   * @param vel
+   * @param acc
+   * @param override_acc
    * @return true when succeed
    * @return false when failed
    */

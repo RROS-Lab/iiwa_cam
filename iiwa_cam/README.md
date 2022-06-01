@@ -13,7 +13,9 @@ The Kuka class impelements common functions for controlling the KUKA manipulator
 - [cam.hpp](./include/iiwa_cam/cam.hpp)  
 
 **Demo Files:** 
+- [cartesian_lin_drop_pose_control_node.cpp](./src/demo/cartesian_lin_drop_pose_control_node.cpp)
 - [cartesian_lin_pose_control_node.cpp](./src/demo/cartesian_lin_pose_control_node.cpp)
+- [cartesian_ptp_drop_pose_control_node.cpp](./src/demo/cartesian_ptp_drop_pose_control_node.cpp)
 - [cartesian_ptp_pose_control_node.cpp](./src/demo/cartesian_ptp_pose_control_node.cpp)
 - [cartesian_spline_node.cpp](./src/demo/cartesian_spline_node.cpp)
 - [joint_pose_control_node.cpp](./src/demo/joint_pose_control_node.cpp)
