@@ -10,15 +10,17 @@ int main(int argc, char **argv) {
   spinner.start();
 
   cam::Kuka kuka;
+  kuka.set_printer(true);
 
   kuka.set_cart_traj_vel_acc(0.1, 0.1);
 
   std::vector<geometry_msgs::Pose> waypoints;
+  std::vector<int> status;
 
   if (argc > 1) {
     // read cartesian trajectory from file
     std::cout << "using data from file: " << argv[1] << std::endl;
-    cam::read_traj_cart(argv[1], waypoints);
+    cam::read_cart_traj(argv[1], waypoints,status);
 
   } else {
     geometry_msgs::Pose target_pose;
@@ -29,7 +31,7 @@ int main(int argc, char **argv) {
 
     target_pose.position.x = 0.52;
     target_pose.position.y = 0.0;
-    target_pose.position.z = 0.15;
+    target_pose.position.z = 0.25;
 
     double centerA = target_pose.position.x;
     double centerB = target_pose.position.y;
@@ -40,11 +42,10 @@ int main(int argc, char **argv) {
       target_pose.position.y = centerB + radius * sin(th);
       waypoints.emplace_back(target_pose);
     }
-    kuka.move_cart_ptp(waypoints[0]);
+    status.resize(waypoints.size(),5);
   }
 
-  std::cout << "cartesian waypoints size: " << waypoints.size() << std::endl;
-  kuka.exe_cart_traj(waypoints);
+  kuka.exe_cart_traj(waypoints, status);
 
   return 0;
 }

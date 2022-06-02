@@ -34,7 +34,8 @@ namespace cam {
  * @param file
  * @param traj
  */
-void read_traj_cart(char const *file, std::vector<geometry_msgs::Pose> &traj) {
+void read_cart_traj(char const *file, std::vector<geometry_msgs::Pose> &traj,
+                    std::vector<int> &status) {
   std::ifstream fp(file);
   std::string line;
   getline(fp, line);  // ignore the first line of csv file
@@ -59,6 +60,10 @@ void read_traj_cart(char const *file, std::vector<geometry_msgs::Pose> &traj) {
     pose.orientation.z = data_line.at(6);
 
     traj.emplace_back(pose);
+
+    std::string number;
+    getline(readstr, number, ',');
+    status.emplace_back(std::stoi(number));
   }
 }
 
@@ -657,7 +662,14 @@ class Kuka {
    * @param status status of start point, default = -1
    */
   void exe_cart_traj(const std::vector<geometry_msgs::Pose> &trajectory,
-                     const int status = UNDEFINED_STATUS) {
+                     const std::vector<int> &status) {  // TODO: not tested yet
+    if (trajectory.size() != status.size()) {
+      std::cout << "Failed to execute cartesian trajectory, size of trajectory "
+                   "and status should be same!"
+                << std::endl;
+      return;
+    }
+
     iiwa_msgs::MoveAlongSplineAction spline_act_msg;
 
     spline_act_msg.action_goal.header.frame_id = "iiwa_link_0";
@@ -667,18 +679,26 @@ class Kuka {
     size_t traj_len = trajectory.size();
 
     seg_vec.reserve(traj_len);
+    auto status_iter = status.begin();
 
     for (auto iter = trajectory.begin(); iter != trajectory.end(); iter++) {
       iiwa_msgs::SplineSegment seg;
       seg.type = iiwa_msgs::SplineSegment::SPL;
+
       seg.point.poseStamped.header.frame_id = "iiwa_link_0";
+      seg.point.redundancy.status = *status_iter;
+      status_iter++;
 
       seg.point.poseStamped.pose = *iter;
 
       seg_vec.emplace_back(seg);
     }
-    // if this function doesnt work try change this code to move_cart_ptp()
-    move_cart_ptp(trajectory[0], status);
+
+    if (m_print_info)
+      std::cout << "cartesian trajectory size: " << trajectory.size()
+                << std::endl;
+
+    move_cart_ptp(trajectory[0], status[0]);
 
     cartesian_spline_client->sendGoal(spline_act_msg.action_goal.goal);
   }
