@@ -120,7 +120,9 @@ void mt_test1(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
   // test1();
   // test2(argc, argv);
-  test3(argc, argv);
+  // test3(argc, argv);
+  if (argc > 1)
+    csv_reader_test(argc, argv);
 
   // if (argc > 1) csv_reader_test(argc, argv);
   // csv_writer_test();

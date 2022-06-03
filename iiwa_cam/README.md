@@ -31,3 +31,7 @@ The Kuka class impelements common functions for controlling the KUKA manipulator
 - [csv2](https://github.com/p-ranav/csv2) (included already)
 
 
+**Dependencies**
+- [csv2](https://github.com/p-ranav/csv2)
+
+
