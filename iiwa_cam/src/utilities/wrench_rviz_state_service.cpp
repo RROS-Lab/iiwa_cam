@@ -1,4 +1,4 @@
-#include <cam.hpp>
+#include <iiwa.hpp>
 
 static ros::Publisher wrench_pub;
 
