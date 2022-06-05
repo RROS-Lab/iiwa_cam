@@ -13,6 +13,7 @@ namespace cam {
 class KukaRecorder {
  public:
   bool recorder_state = false;
+  bool do_clean = false;
 
   std::mutex *mtx;  // mutex for recorder_state
 
@@ -23,16 +24,29 @@ class KukaRecorder {
   ros::Subscriber wrench_sub;
 
   void wrench_callback(const iiwa_msgs::CartesianWrench &msg) {
-    // mtx.lock();
-    if (!recorder_state)
+    // mtx->lock();
+    bool state = recorder_state;
+    // mtx->unlock();
+
+    if (!state)
       return;
+
     geometry_msgs::Wrench wrench_msg;
     wrench_msg = msg.wrench;
   }
 
   void cart_pos_callback(const iiwa_msgs::CartesianPose &msg) {
-    if (!recorder_state)
+      std::cout<<"(cart "<<std::flush;
+      std::cout<<this->get_name()<<std::flush;
+
+    mtx->lock();
+    bool state = this->recorder_state;
+    mtx->unlock();
+
+    if (!state)
       return;
+
+      std::cout<<" pos)"<<std::endl;
     msg.redundancy.e1;
     msg.poseStamped.pose.orientation.w;
   }
@@ -62,11 +76,12 @@ class KukaRecorder {
 
 }  // namespace cam
 
-static std::unordered_map<std::string, cam::KukaRecorder> pr_map;
+static std::unordered_map<std::string, cam::KukaRecorder*> pr_map;
 
 bool pr_callback(iiwa_cam::PathRecorder::Request &req,
                  iiwa_cam::PathRecorder::Response &res) {
   auto pr_iter = pr_map.find(req.robot_name);
+
   if (pr_iter == pr_map.end()) {
     res.error = "No robot named " + req.robot_name + " is being listening to";
     res.success = false;
@@ -75,6 +90,17 @@ bool pr_callback(iiwa_cam::PathRecorder::Request &req,
   }
 
   auto &pr = pr_iter->second;
+
+
+  pr->mtx->lock();
+
+  if (pr->recorder_state && !req.record) {  // true -> false
+    pr->do_clean = true;
+  }
+  pr->recorder_state = req.record;
+
+  pr->mtx->unlock();
+  std::cout<<pr->get_name()<<" "<<pr->recorder_state<<std::endl;
 
   res.success = true;
   return true;
@@ -90,7 +116,7 @@ int main(int argc, char *argv[]) {
     std::cout << "(" << i << ") ";
     std::string name(argv[i]);
 
-    pr_map[name] = cam::KukaRecorder(nh, name);
+    pr_map[name] = new cam::KukaRecorder(nh, name);
   }
 
   ros::ServiceServer pr_service =
