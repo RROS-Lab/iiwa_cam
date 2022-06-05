@@ -1,13 +1,20 @@
 #include <iiwa_cam/PathRecorder.h>
+#include <iiwa_msgs/CartesianPose.h>
+#include <iiwa_msgs/CartesianWrench.h>
 #include <ros/ros.h>
-#include<iiwa_msgs/CartesianPose.h>
-#include<iiwa_msgs/CartesianWrench.h>
 // #include <iiwa.hpp>
+#include <geometry_msgs/Wrench.h>
+
+#include <mutex>
 #include <unordered_map>
 
-class PathRecorder {
+namespace cam {
+
+class KukaRecorder {
  public:
   bool recorder_state = false;
+
+  std::mutex *mtx;  // mutex for recorder_state
 
  private:
   std::string robot_name;
@@ -16,11 +23,11 @@ class PathRecorder {
   ros::Subscriber wrench_sub;
 
   void wrench_callback(const iiwa_msgs::CartesianWrench &msg) {
+    // mtx.lock();
     if (!recorder_state)
       return;
-    geometry_msgs::WrenchStamped wrench_msg;
-    wrench_msg.wrench = msg.wrench;
-    wrench_msg.header.frame_id = "iiwa_link_7";
+    geometry_msgs::Wrench wrench_msg;
+    wrench_msg = msg.wrench;
   }
 
   void cart_pos_callback(const iiwa_msgs::CartesianPose &msg) {
@@ -31,31 +38,51 @@ class PathRecorder {
   }
 
  public:
-  PathRecorder() = default;
+  KukaRecorder() = default;
 
-  PathRecorder(ros::NodeHandle &nh, const std::string &name) {
+  KukaRecorder(ros::NodeHandle &nh, const std::string &name) {
     std::cout << name << std::endl;
     robot_name = name;
 
-    std::string robot_ns = "/";
+    std::string robot_ns = "/" + robot_name;
 
-    wrench_sub = nh.subscribe(robot_ns + robot_name + "/state/CartesianWrench",
-                              10, &PathRecorder::wrench_callback, this);
+    wrench_sub = nh.subscribe(robot_ns + "/state/CartesianWrench", 10,
+                              &KukaRecorder::wrench_callback, this);
 
-    cart_pos_sub = nh.subscribe(robot_ns + robot_name + "/state/CartesianPose",
-                                10, &PathRecorder::cart_pos_callback, this);
+    cart_pos_sub = nh.subscribe(robot_ns + "/state/CartesianPose", 10,
+                                &KukaRecorder::cart_pos_callback, this);
+
+    mtx = new std::mutex();
   }
 
-  ~PathRecorder() = default;
+  ~KukaRecorder() { delete mtx; }
 
   const std::string &get_name() const { return robot_name; }
 };
 
+}  // namespace cam
+
+static std::unordered_map<std::string, cam::KukaRecorder> pr_map;
+
+bool pr_callback(iiwa_cam::PathRecorder::Request &req,
+                 iiwa_cam::PathRecorder::Response &res) {
+  auto pr_iter = pr_map.find(req.robot_name);
+  if (pr_iter == pr_map.end()) {
+    res.error = "No robot named " + req.robot_name + " is being listening to";
+    res.success = false;
+
+    return true;
+  }
+
+  auto &pr = pr_iter->second;
+
+  res.success = true;
+  return true;
+}
+
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "path_record_service");
   ros::NodeHandle nh;
-
-  std::unordered_map<std::string, PathRecorder> pr_map;
 
   std::cout << "Kuka Path Recorder is Listening from: " << std::endl;
 
@@ -63,11 +90,11 @@ int main(int argc, char *argv[]) {
     std::cout << "(" << i << ") ";
     std::string name(argv[i]);
 
-    pr_map[name] = PathRecorder(nh, name);
+    pr_map[name] = cam::KukaRecorder(nh, name);
   }
 
-
-
+  ros::ServiceServer pr_service =
+      nh.advertiseService("/cam/iiwa/PathRecorder", pr_callback);
 
   ros::spin();
   ros::shutdown();
