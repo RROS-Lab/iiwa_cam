@@ -30,8 +30,12 @@ The Kuka class impelements common functions for controlling the KUKA manipulator
 - [iiwa_stack_cam](https://github.com/RROS-Lab/iiwa_stack_cam) (need installation)
 - [csv2](https://github.com/p-ranav/csv2) (included already)
 
+## Microservice List
+- [Path Recording](./wiki/KukaMicroservices.md#path-recording)
+- [End Effector Wrench Visulization](./wiki/KukaMicroservices.md#end-effector-wrench-visulization)
 
-**Dependencies**
+
+## Dependencies
 - [csv2](https://github.com/p-ranav/csv2)
 
 

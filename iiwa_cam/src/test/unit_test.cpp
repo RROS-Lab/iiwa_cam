@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
   // test3(argc, argv);
 
   // if (argc > 1) csv_reader_test(argc, argv);
-  // csv_writer_test();
+  csv_writer_test();
 
 
 
