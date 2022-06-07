@@ -290,9 +290,7 @@ target_link_libraries(moveit_rviz_state_receiver_service
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(wrench_rviz_state_service
-  ${catkin_LIBRARIES}
-)
+
 # unit test files
 target_link_libraries(unit_test
   ${catkin_LIBRARIES}
