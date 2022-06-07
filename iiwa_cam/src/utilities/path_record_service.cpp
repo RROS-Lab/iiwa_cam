@@ -5,6 +5,7 @@
 // #include <iiwa.hpp>
 #include <geometry_msgs/Wrench.h>
 
+#include <csv2.hpp>
 #include <mutex>
 #include <unordered_map>
 
@@ -28,7 +29,7 @@ class KukaCartesianPose {
     status = msg.redundancy.status;
   }
 
-  std::vector<std::string> to_vector() {
+  std::vector<std::string> to_vector() const {
     std::vector<std::string> res;
     res.reserve(8);
     for (const auto &cart_pos : cart) {
@@ -53,7 +54,7 @@ class KukaWrench {
     wrench[5] = msg.wrench.torque.z;
   }
 
-  std::vector<std::string> to_vector() {
+  std::vector<std::string> to_vector() const {
     std::vector<std::string> res;
     res.reserve(6);
     for (const auto &val : wrench) {
@@ -78,7 +79,15 @@ class KukaRecorder {
   std::vector<KukaCartesianPose> cart_pos_queue;
   std::vector<KukaWrench> wrench_queue;
 
+  std::ofstream cart_pos_stream;
+  std::ofstream wrench_stream;
+
   void wrench_callback(const iiwa_msgs::CartesianWrench &msg) {
+    static int cnt = 0;
+    if (++cnt < 5)
+      return;
+    else
+      cnt = 0;
     std::lock_guard<std::mutex> lock(*mtx);
 
     if (!recorder_state)
@@ -86,11 +95,16 @@ class KukaRecorder {
 
     wrench_queue.emplace_back(KukaWrench(msg));
 
-    if (wrench_queue.size() >= 50)
+    if (wrench_queue.size() >= 29)
       clean_wrench_queue();
   }
 
   void cart_pos_callback(const iiwa_msgs::CartesianPose &msg) {
+    static int cnt = 0;
+    if (++cnt < 5)
+      return;
+    else
+      cnt = 0;
     std::lock_guard<std::mutex> lock(*mtx);
 
     if (!recorder_state)
@@ -98,18 +112,31 @@ class KukaRecorder {
 
     cart_pos_queue.emplace_back(KukaCartesianPose(msg));
 
-    if (cart_pos_queue.size() >= 50)
+    if (cart_pos_queue.size() >= 47)
       clean_cart_pos_queue();
   }
 
  public:
   KukaRecorder() = default;
 
-  KukaRecorder(ros::NodeHandle &nh, const std::string &name) {
+  KukaRecorder(ros::NodeHandle &nh, std::string name)
+      : cart_pos_stream(name + "_cart_path.csv"),
+        wrench_stream(name + "_wrech.csv") {
     mtx = new std::mutex();
 
-    cart_pos_queue.reserve(50);
+    cart_pos_queue.reserve(30);
     wrench_queue.reserve(50);
+
+    // std::cout << cart_pos_stream.is_open() << " " << wrench_stream.is_open()
+    //           << std::endl;
+
+    csv2::Writer<csv2::delimiter<','>> cart_pos_writer(cart_pos_stream);
+    csv2::Writer<csv2::delimiter<','>> wrench_writer(wrench_stream);
+
+    cart_pos_writer.write_row(
+        std::vector<std::string>{"X", "Y", "Z", "w", "x", "y", "z", "status"});
+    wrench_writer.write_row(
+        std::vector<std::string>{"Fx", "Fy", "Fz", "Tx", "Ty", "Tz"});
 
     std::cout << name << std::endl;
     robot_name = name;
@@ -123,13 +150,62 @@ class KukaRecorder {
                                 &KukaRecorder::cart_pos_callback, this);
   }
 
-  ~KukaRecorder() { delete mtx; }
+  ~KukaRecorder() {
+    if (cart_pos_stream.is_open())
+      cart_pos_stream.close();
+    if (wrench_stream.is_open())
+      wrench_stream.close();
+    delete mtx;
+  }
 
   const std::string &get_name() const { return robot_name; }
 
-  void clean_cart_pos_queue() {}
+  /**
+   * @brief convert data in cart_pos_queue to csv file.
+   *
+   * @pre get the mutex
+   *
+   */
+  void clean_cart_pos_queue() {
+    cart_pos_stream.open(robot_name + "_cart_path.csv",
+                         std::ios::out | std::ios::app);
 
-  void clean_wrench_queue() {}
+    csv2::Writer<csv2::delimiter<','>> cart_pos_writer(cart_pos_stream);
+
+    std::vector<std::vector<std::string>> output;
+    output.reserve(50);
+
+    for (const auto &val : cart_pos_queue) {
+      output.emplace_back(val.to_vector());
+    }
+
+    cart_pos_writer.write_rows(output);
+
+    cart_pos_queue.clear();
+  }
+
+  /**
+   * @brief convert data in wrench_queue to csv file.
+   *
+   * @pre get the mutex
+   *
+   */
+  void clean_wrench_queue() {
+    wrench_stream.open(robot_name + "_wrech.csv",
+                       std::ios::out | std::ios::app);
+    csv2::Writer<csv2::delimiter<','>> wrench_writer(wrench_stream);
+
+    std::vector<std::vector<std::string>> output;
+    output.reserve(30);
+
+    for (const auto &val : wrench_queue) {
+      output.emplace_back(val.to_vector());
+    }
+
+    wrench_writer.write_rows(output);
+
+    wrench_queue.clear();
+  }
 };
 
 }  // namespace cam
@@ -163,7 +239,7 @@ int main(int argc, char *argv[]) {
   ros::init(argc, argv, "path_record_service");
   ros::NodeHandle nh;
 
-  std::cout << "Kuka Path Recorder is Listening from: " << std::endl;
+  std::cout << "Kuka Path Recorder is listening from: " << std::endl;
 
   for (int i = 1; i < argc; i++) {
     std::cout << "(" << i << ") ";
