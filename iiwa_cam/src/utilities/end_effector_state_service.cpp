@@ -462,10 +462,6 @@ int main(int argc, char *argv[]) {
     std::string name(argv[i]);
 
     pr_map[name] = new cam::KukaRecorder(nh, name);
-
-    // std::ofstream* cart_pos_stream;
-    // std::ofstream* wrench_stream = new std::ofstream();
-
   }
 
   ros::ServiceServer pr_service =
