@@ -36,6 +36,7 @@ The Kuka class impelements common functions for controlling the KUKA manipulator
 
 
 ## Dependencies
-- [csv2](https://github.com/p-ranav/csv2)
+- [iiwa_stack_cam](https://github.com/RROS-Lab/iiwa_stack_cam) (need installation)
+- [csv2](https://github.com/p-ranav/csv2) (included already)
 
 
