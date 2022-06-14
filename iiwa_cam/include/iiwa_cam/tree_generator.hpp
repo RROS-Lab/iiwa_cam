@@ -21,16 +21,33 @@ class KukaTreeNode {
         this->frame = frame;
     }
 
-    // convert a string to a string vector
+    // convert a svectortring to a string vector
     std::vector<std::string> get_ancestors(const std::string &abs_paths);
     // returns a pointer to the node just been added
     KukaTreeNode* insert_node(const std::string &name, const std::string &abs_path, KukaTreeNode *prev_node, cam::Frame* frame);
 
     // get child
+    KukaTreeNode& get_child(const std::string childname) {
+        for (std::vector<KukaTreeNode*>::iterator it = this->children.begin(); it != this->children.end(); it++) {
+            if ((*it)->name==childname) {
+                // KukaTreeNode *&ref = *it;
+                return **it;
+            }
+        }
+        
+        // TO ASK: handle to handle this situation
+        std::cout << childname << " is not a child of " << this->name << std::endl;
+        // KukaTreeNode *&ref = this;
+        return *this;
+    }
 
     // get children
-
+    std::vector<KukaTreeNode*> get_children() {
+        // TO CHECK: return type is vector<pointer>
+        return this->children;
+    }
 };
+
 
 void print_string_vector(const std::vector<std::string> &v) {
     if (v.size()==0) {
@@ -89,6 +106,7 @@ KukaTreeNode* insert_node(const std::string &name, const std::string &abs_path, 
     }
 
 // preorder trasversal
+
 std::vector<std::string> print_tree(KukaTreeNode* tree_root) {
 
     std::stack<KukaTreeNode*> s;
@@ -109,8 +127,11 @@ std::vector<std::string> print_tree(KukaTreeNode* tree_root) {
 
 KukaTreeNode* generate_tree(const std::vector<std::string> &frame_names, std::vector<std::string> &abs_paths, std::vector<cam::Frame*> &frames) {
     
-    // add /r to front of all elements in parent_name
-    for(std::vector<std::string>::size_type i = 0; i != abs_paths.size(); ++i) {
+    // add /r to front of all elements in parent_naparent_naparent_naparent_naparent_naparent_na
+    std::vector<KukaTreeNode*> children;
+    KukaTreeNode* parent;
+    cam::Frame* frame;
+    for(std::vector<std::string>::size_type i = 0; i != abs_paths.size(); i++) {
         abs_paths[i] = "/r" + abs_paths[i];
     }
 

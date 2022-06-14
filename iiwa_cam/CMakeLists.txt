@@ -134,6 +134,7 @@ include_directories(
 #   src/${PROJECT_NAME}/iiwa_cam.cpp
 # )
 
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -189,6 +190,11 @@ add_executable(moveit_rviz_state_receiver_service
 # unit test files
 add_executable(unit_test 
   src/test/unit_test.cpp
+)
+
+# get frame files
+add_executable(tester 
+  src/tester.cpp
 )
 
 ## Rename C++ executable without prefix
@@ -295,6 +301,12 @@ target_link_libraries(moveit_rviz_state_receiver_service
 target_link_libraries(unit_test
   ${catkin_LIBRARIES}
 )
+
+# get frame files
+target_link_libraries(tester
+  ${catkin_LIBRARIES}
+)
+
 
 #############
 ## Install ##

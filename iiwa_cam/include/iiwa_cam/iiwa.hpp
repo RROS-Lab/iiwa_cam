@@ -379,6 +379,14 @@ class Kuka {
     iiwa_msgs::GetFrames frame_msg;
     frames_client.call(frame_msg);
     std::cout << "get " << frame_msg.response.frame_size << std::endl;
+
+    std::vector<std::string> frame_names = frame_msg.response.frame_name;
+    std::vector<std::string> abs_paths = frame_msg.response.parent_name;
+
+    // each node has its joint_pos & cart_pos?
+    // std::vector<double> joint_pos = frame_msg.response.joint_position;
+    // std::vector<double> cart_pos = frame_msg.response.cart_world_position;
+
   }
 
   /**
