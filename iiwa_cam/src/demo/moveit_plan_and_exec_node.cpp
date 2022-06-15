@@ -1,7 +1,7 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <ros/ros.h>
 
-#include <cam.hpp>
+#include <iiwa.hpp>
 #include <cmath>
 
 int main(int argc, char **argv) {

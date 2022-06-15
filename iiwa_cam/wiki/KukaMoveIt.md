@@ -3,29 +3,22 @@
 [Home](../README.md)
 
 ## Content  
-1. [Modified iiwa_cam_stack Moveit!](#iiwacamstack-moveit-api)
-1. [Show Wrench on the Robot](#show-wrench-on-the-robot)
+1. [Modified iiwa_stack_cam Moveit!](#iiwastackcam-moveit-api)
 1. [Original iiwa_stack Moveit!](#original-iiwastack-moveit-api)
 
 
-## iiwa_cam_stack Moveit API
+## iiwa_stack_cam Moveit API
 
-1. Control real kuka using RVIZ:  
+There are two ways:
+
+1. Control real kuka using RViz: (based on [MoveIt! - RViz Support Services](./wiki/KukaMicroservices.md#moveit---rviz-support-services))  
     in terminal, run:  
     `roslaunch iiwa_cam moveit_kuka.launch`  
     then you can trag the end effector, paln and execute.
 
-
 1. Control real kuka using Cpp/Python Program:  
     **Demo File**: [moveit_plan_and_exec_node.cpp](../src/demo/moveit_plan_and_exec_node.cpp)
 
-## Show Wrench on the Robot
-  1. In terminal, run:  
-    `roslaunch iiwa_cam moveit_kuka.launch`  
-    Run the demo file bellow  
-    **Demo File**: [wrench_rviz_state_node.cpp](../src/utilities/wrench_rviz_state_node.cpp)
-
-  1. In RVIZ, click "Add" button -> in the "By topic" tab -> select "/iiwa/wrench" (or any topic you set in [wrench_rviz_state_node.cpp](../src/utilities/wrench_rviz_state_node.cpp))
 
 ## Original iiwa_stack Moveit API
 

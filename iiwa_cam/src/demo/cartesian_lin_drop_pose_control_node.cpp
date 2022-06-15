@@ -1,5 +1,5 @@
 
-#include <cam.hpp>
+#include <iiwa.hpp>
 using namespace std;
 
 int main(int argc, char* argv[]) {

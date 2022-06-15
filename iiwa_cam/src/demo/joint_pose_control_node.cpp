@@ -1,13 +1,23 @@
-#include <cam.hpp>
-#include <iostream>
-#include <vector>
+/**
+ * @file joint_pose_control_node.cpp
+ * @author Peijie Xu (peijiexu@usc.edu)
+ * @brief This file shows how to control the kuka move to a joint space goal
+ * @version 0.1
+ * @date 2022-06-11
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
+#include <iiwa.hpp>
 
 using namespace std;
-
 
 int main(int argc, char* argv[]) {
   ros::init(argc, argv, "joint_pose_control_node");
 
+  // the robot name is "iiwa" (default value), should be same as
+  // RoboticsAPI.data.xml on Sunrise Workspace (in Windows computer)
   cam::Kuka kuka;
   vector<double> jp = {0, 0, 0, 0, 0, 0, 0};
 
@@ -41,7 +51,6 @@ int main(int argc, char* argv[]) {
 
   // phase 8
   kuka.set_vel_acc();
-
 
   ros::shutdown();
 

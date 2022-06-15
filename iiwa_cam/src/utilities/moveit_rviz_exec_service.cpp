@@ -1,12 +1,8 @@
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit_msgs/DisplayTrajectory.h>
 #include <moveit_msgs/ExecuteTrajectoryActionGoal.h>
-#include <ros/ros.h>
 
-#include <cam.hpp>
-#include <iostream>
-#include <string>
-#include <vector>
+#include <iiwa.hpp>
 
 static cam::Kuka* kuka;
 
@@ -16,10 +12,12 @@ void moveit_callback(const moveit_msgs::ExecuteTrajectoryActionGoal &msg) {
 }
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "moveit_rviz_exec_node");
-
+  ros::init(argc, argv, "moveit_rviz_exec_service");
   ros::NodeHandle nh;
-  kuka = new cam::Kuka("iiwa");
+
+   std::string name = (argc >= 2)?argv[1]:"iiwa";
+
+  kuka = new cam::Kuka(name);
 
   ros::Subscriber moveit_sub =
       nh.subscribe("/execute_trajectory/goal", 10, moveit_callback);

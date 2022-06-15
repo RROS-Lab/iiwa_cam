@@ -1,6 +1,15 @@
 #pragma once
+// ROS build-in headers
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/WrenchStamped.h>
+#include <moveit/robot_trajectory/robot_trajectory.h>
+#include <ros/ros.h>
+
+// iiwa_cam pkg defined srvs
+#include <iiwa_cam/EndEffectorState.h>
+#include <iiwa_cam/PathRecorder.h>
+
+// iiwa_stack_cam defined msgs srvs acts
 #include <iiwa_msgs/CartesianPose.h>
 #include <iiwa_msgs/CartesianWrench.h>
 #include <iiwa_msgs/GetFrames.h>
@@ -12,13 +21,17 @@
 #include <iiwa_msgs/SetPTPJointSpeedLimits.h>
 #include <iiwa_msgs/SetSmartServoJointSpeedLimits.h>
 #include <iiwa_msgs/SetSmartServoLinSpeedLimits.h>
-#include <moveit/robot_trajectory/robot_trajectory.h>
-#include <ros/ros.h>
 
+// csv2 lib for csv handling
+#include <csv2/csv2.hpp>
+
+// C++ STL
+#include <atomic>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace cam {
@@ -119,6 +132,81 @@ class Frame {
 };
 
 class Kuka {
+ public:
+  class EndEffectorState {
+   private:
+    ros::ServiceClient ee_recorder_client;
+    ros::ServiceClient ee_state_client;
+    std::string name;
+
+    std::atomic<bool> watchdog_state;
+
+    void watchdog() {
+      while (watchdog_state && ros::ok()) {
+        ros::Duration(4).sleep();
+
+        iiwa_cam::PathRecorder msg;
+        msg.request.record = true;
+        msg.request.robot_name = name;
+        msg.request.watchdog = true;
+        
+        if (!watchdog_state)
+          return;
+        ee_recorder_client.call(msg);
+        // std::cout << "client feeds dog" << std::endl;
+      }
+      // std::cout << "watchdog_state: " << std::boolalpha << watchdog_state
+      //           << " client stop feeding" << std::endl;
+    }
+
+   public:
+    EndEffectorState() = default;
+
+    EndEffectorState(const std::string &rob_name) : name(rob_name) {
+      ros::NodeHandle nh;
+      ee_recorder_client =
+          nh.serviceClient<iiwa_cam::PathRecorder>("/cam/iiwa/PathRecorder");
+
+      ee_state_client = nh.serviceClient<iiwa_cam::EndEffectorState>(
+          "/cam/iiwa/EndEffectorState");
+    }
+
+    std::pair<geometry_msgs::Pose, int> get_cart_pose() {
+      iiwa_cam::EndEffectorState msg;
+      msg.request.robot_name = name;
+      ee_state_client.call(msg);
+      if (!msg.response.success)
+        std::cerr << msg.response.error << std::endl;
+      return std::make_pair(msg.response.pose, msg.response.status);
+    };
+
+    void start_recording(bool watch_dog = true) {
+      iiwa_cam::PathRecorder msg;
+      msg.request.record = true;
+      msg.request.robot_name = name;
+      msg.request.watchdog = watch_dog;
+      ee_recorder_client.call(msg);
+      if (!msg.response.success)
+        std::cerr << msg.response.error << std::endl;
+
+      // start client watchdog
+      if (watch_dog) {
+        watchdog_state = watch_dog;
+        std::thread(std::bind(&EndEffectorState::watchdog, this)).detach();
+      }
+    }
+
+    void end_recording() {
+      iiwa_cam::PathRecorder msg;
+      msg.request.record = false;
+      msg.request.robot_name = name;
+      // msg.request.watchdog = watchdog_state;
+      ee_recorder_client.call(msg);
+      // stop client watchdog
+      watchdog_state = false;
+    }
+  };
+
  private:
   ros::ServiceClient cart_spline_vel_client;
   ros::ServiceClient joint_vel_client;
@@ -166,6 +254,8 @@ class Kuka {
 
   std::string iiwa_name;
 
+  EndEffectorState ee_state;
+
  private:
   iiwa_msgs::MoveToCartesianPoseAction build_cart_act(
       const geometry_msgs::Pose &pose, int status = UNDEFINED_STATUS) {
@@ -194,10 +284,6 @@ class Kuka {
 
     return cartesian_pos_act;
   }
-
- public:
-  Kuka() { rob_init("iiwa"); }
-  Kuka(const std::string &rob_name) { rob_init(rob_name); }
 
   void rob_init(const std::string &rob_name) {
     ros::NodeHandle nh;
@@ -255,8 +341,12 @@ class Kuka {
 
     set_vel_acc();
     set_cart_traj_vel_acc();
-    // TODO: add droppable velocity setting
   }
+
+ public:
+  Kuka() : ee_state("iiwa") { rob_init("iiwa"); }
+
+  Kuka(const std::string &rob_name) : ee_state(rob_name) { rob_init(rob_name); }
 
   ~Kuka() {
     delete joint_pos_client;
@@ -271,6 +361,14 @@ class Kuka {
    * @param print set the parameter to true to print logger message
    */
   void set_printer(const bool &print) { m_print_info = print; }
+
+  /**
+   * @brief Get the End Effector State class of this kuka, which allows
+   * recording path and getting the real time cartesian position
+   *
+   * @return EndEffectorState&
+   */
+  EndEffectorState &end_effector_state() { return ee_state; }
 
   /**
    * @brief Get the saved frames from teaching pendant, the Parent frames should
@@ -662,7 +760,7 @@ class Kuka {
    * @param status status of start point, default = -1
    */
   void exe_cart_traj(const std::vector<geometry_msgs::Pose> &trajectory,
-                     const std::vector<int> &status) {  // TODO: not tested yet
+                     const std::vector<int> &status) {
     if (trajectory.size() != status.size()) {
       std::cout << "Failed to execute cartesian trajectory, size of trajectory "
                    "and status should be same!"

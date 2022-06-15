@@ -1,4 +1,4 @@
-#include <cam.hpp>
+#include <iiwa.hpp>
 
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "cartesian_ptp_drop_pose_control_node");

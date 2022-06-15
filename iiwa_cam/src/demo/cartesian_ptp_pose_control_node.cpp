@@ -1,7 +1,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <iiwa_msgs/MoveToJointPositionAction.h>
 
-#include <cam.hpp>
+#include <iiwa.hpp>
 using namespace std;
 
 int main(int argc, char* argv[]) {
