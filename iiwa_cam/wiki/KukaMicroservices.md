@@ -76,22 +76,44 @@
 
 ### End Effector Path Recording
 
+  **Watchdog Machanisim**:  
+  - [Wikipedia: Watchdog timer](https://en.wikipedia.org/wiki/Watchdog_timer)
+  - The watchdog machanisim is introduced to this server, which allows the server stop recording when a client crashes. Once the client setup a watchdog, it should feed the dog with a frequency higher than **0.2** Hz （recommend 4 seconds between two feeds)
+
   **Note**: The data is saved in your terminal's current working directory  
   - cartesian path: `[robot name]_cart_path.csv`  
   - wrench: `[robot name]_wrench.csv`  
 
-  To record path of the end effector, there are also two options:
+  To record path of the end effector, there are three options:
   
-  1.  In a terminal:   
+  1.  In a terminal:
       - Start recording by calling service `/cam/iiwa/PathRecorder`, with parameters:   
       `robot_name: [robot name]`  
-      `record: true`
+      `record: true`  
+      `watchdog: false`
       - Stop recording by calling service `/cam/iiwa/PathRecorder`, with parameters:   
       `robot_name: [robot name]`  
-      `record: false`
+      `record: false`  
+      `watchdog: false`  
 
+  1. In a terminal: (protected by the **watchdog machanisim**)  
+      - Start recording by calling service `/cam/iiwa/PathRecorder`, with parameters:   
+      `robot_name: [robot name]`  
+      `record: true`  
+      `watchdog: true`
 
-  1.  In C++ program:   
+      - Feed dog by calling service `/cam/iiwa/PathRecorder`, with parameters:  
+      （recommend 4 seconds between two feeds)  
+      `robot_name: [robot name]`  
+      `record: true`  
+      `watchdog: true`
+
+      - Stop recording by calling service `/cam/iiwa/PathRecorder`, with parameters:   
+      `robot_name: [robot name]`  
+      `record: false`  
+      `watchdog: true`  
+
+  1.  In C++ program: (protected by the **watchdog machanisim**)  
     call `cam::Kuka::end_effector_state()::start_recording()` and `cam::Kuka::end_effector_state()::end_recording()`
       ```cpp
       kuka.end_effector_state().start_recording();

@@ -66,9 +66,8 @@ int main(int argc, char **argv) {
 
   // execute cartesian space trajectory
   kuka.exe_cart_traj(waypoints, status);
-  getchar();
+
   // stop recording end effector state
   kuka.end_effector_state().end_recording();
-  getchar();
   return 0;
 }

@@ -381,12 +381,11 @@ void KukaWatchDog::watcher(KukaRecorder *recorder) {
 static std::unordered_map<std::string, cam::KukaRecorder *> pr_map;
 
 /**
- * @brief Callback function for recorder request
+ * @brief Callback function for end effector path recording request
  *
  * @param req
  * @param res
- * @return true
- * @return false
+ * @return true once the reqest is served
  */
 bool pr_callback(iiwa_cam::PathRecorder::Request &req,
                  iiwa_cam::PathRecorder::Response &res) {
@@ -426,6 +425,13 @@ bool pr_callback(iiwa_cam::PathRecorder::Request &req,
   return true;
 }
 
+/**
+ * @brief Callback function for end effector current cartesian position inquiry
+ * 
+ * @param req 
+ * @param res 
+ * @return true once the reqest is served
+ */
 bool ee_callback(iiwa_cam::EndEffectorState::Request &req,
                  iiwa_cam::EndEffectorState::Response &res) {
   auto pr_iter = pr_map.find(req.robot_name);
