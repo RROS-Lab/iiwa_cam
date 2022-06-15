@@ -281,7 +281,7 @@ class KukaRecorder {
   void clean_cart_pos_queue() {
     cart_pos_stream.open(robot_name + "_cart_path.csv",
                          std::ios::out | std::ios::app);
-same
+
     csv2::Writer<csv2::delimiter<','>> cart_pos_writer(cart_pos_stream);
 
     std::vector<std::vector<std::string>> output;
