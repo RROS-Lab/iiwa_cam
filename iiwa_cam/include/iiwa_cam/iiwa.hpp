@@ -25,6 +25,9 @@
 // csv2 lib for csv handling
 #include <csv2/csv2.hpp>
 
+// TODO
+#include <tree_generator.hpp>
+
 // C++ STL
 #include <atomic>
 #include <fstream>
@@ -101,35 +104,7 @@ namespace cam {
 
 class Kuka;
 
-class Frame {
- private:
-  friend class Kuka;
 
-  int joints_num;
-  std::vector<double> joint_pos;
-  std::vector<double> cart_pos = std::vector<double>(7);  // X Y Z [W X Y Z]
-
- public:
-  Frame() = default;
-  Frame(int total_joints) : joints_num(total_joints), joint_pos(total_joints) {}
-
-  const std::vector<double> &get_cartesian_pos() const { return cart_pos; }
-  const std::vector<double> &get_joint_pos() const { return joint_pos; }
-
-  bool set_joint_pos(const std::vector<double> &joint_position) {
-    if (joint_position.size() != joints_num)
-      return false;
-    joint_pos = std::move(joint_position);
-    return true;
-  }
-
-  bool set_cart_pos(const std::vector<double> &cart_position) {
-    if (cart_position.size() != 7)
-      return false;
-    cart_pos = std::move(cart_position);
-    return true;
-  }
-};
 
 class Kuka {
  public:
@@ -375,18 +350,29 @@ class Kuka {
    * be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
    *
    */
-  void get_recorded_frames() {  // TODO
+  KukaTreeNode* get_recorded_frames() {  // TODO
+
     iiwa_msgs::GetFrames frame_msg;
     frames_client.call(frame_msg);
     std::cout << "get " << frame_msg.response.frame_size << std::endl;
 
-    std::vector<std::string> frame_names = frame_msg.response.frame_name;
-    std::vector<std::string> abs_paths = frame_msg.response.parent_name;
+    std::vector<std::string>& frame_names = frame_msg.response.frame_name;
+    std::vector<std::string>& abs_paths = frame_msg.response.parent_name;
+    std::vector<iiwa_msgs::JointQuantity>& joint_quantities = frame_msg.response.joint_position;
+    std::vector<geometry_msgs::Pose>& cart_world_positions = frame_msg.response.cart_world_position;
+    
+    std::vector<Frame*> frames;
+    for(int i=0;i<frame_msg.response.frame_size; i++){
+      auto new_frame = new Frame(7);
+      auto & jq = joint_quantities[i];
+      new_frame->set_joint_pos(std::vector<double>{jq.a1,jq.a2,jq.a3,jq.a4,jq.a5,jq.a6,jq.a7});
+      int status = 2;// TODO
+      new_frame->set_cart_pos(std::make_pair(cart_world_positions[i], status));
+      frames.emplace_back(new_frame);
+    }
 
-    // each node has its joint_pos & cart_pos?
-    // std::vector<double> joint_pos = frame_msg.response.joint_position;
-    // std::vector<double> cart_pos = frame_msg.response.cart_world_position;
-
+    KukaTreeNode* tree_root = generate_tree(frame_names, abs_paths, frames);
+    return tree_root;
   }
 
   /**

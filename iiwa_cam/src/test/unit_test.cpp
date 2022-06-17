@@ -3,20 +3,20 @@
 #include <iiwa.hpp>
 
 void test1() {
-  cam::Frame frame(7);
-  auto cart = frame.get_cartesian_pos();
+  // cam::Frame frame(7);
+  // auto cart = frame.get_cartesian_pos();
 
-  cart.push_back(1);
-  auto &in = cart;
-  cam::print_vec(in);
-  cam::print_vec(frame.get_joint_pos());
+  // cart.push_back(1);
+  // auto &in = cart;
+  // cam::print_vec(in);
+  // cam::print_vec(frame.get_joint_pos());
 
-  frame.set_joint_pos(in);
+  // frame.set_joint_pos(in);
 
-  cam::print_vec(frame.get_joint_pos());
+  // cam::print_vec(frame.get_joint_pos());
 
-  in.push_back(22);
-  cam::print_vec(frame.get_joint_pos());
+  // in.push_back(22);
+  // cam::print_vec(frame.get_joint_pos());
 }
 
 void test2(int argc, char *argv[]) {
@@ -54,11 +54,7 @@ void test3(int argc, char *argv[]) {
   ros::NodeHandle nh;
 
     cam::Kuka kuka;
-    kuka.end_effector_state().start_recording();
-    auto cart_pose = kuka.end_effector_state().get_cart_pose();
-    std::cout<<cart_pose.first<<std::endl;
-    ros::Rate(1).sleep();
-    kuka.end_effector_state().end_recording();
+    kuka.get_recorded_frames();
 
 
   ros::spin();
