@@ -7,7 +7,13 @@ void test1(int argc, char *argv[]) {
 
   cam::Kuka kuka;
 
-  cam::print_tree(kuka.get_recorded_frames());
+  auto r = kuka.get_recorded_frames();
+
+  cam::print_tree(r);
+
+  auto p1 = r->get_child("P1");
+
+  cam::print_tree(p1);
 
   ros::spin();
   ros::shutdown();

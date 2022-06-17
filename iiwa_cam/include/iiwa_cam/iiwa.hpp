@@ -104,8 +104,6 @@ namespace cam {
 
 class Kuka;
 
-
-
 class Kuka {
  public:
   class EndEffectorState {
@@ -124,7 +122,7 @@ class Kuka {
         msg.request.record = true;
         msg.request.robot_name = name;
         msg.request.watchdog = true;
-        
+
         if (!watchdog_state)
           return;
         ee_recorder_client.call(msg);
@@ -350,28 +348,33 @@ class Kuka {
    * be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
    *
    */
-  KukaTreeNode* get_recorded_frames() {  // TODO
+  KukaTreeNode *get_recorded_frames() {  
 
     iiwa_msgs::GetFrames frame_msg;
     frames_client.call(frame_msg);
     std::cout << "get " << frame_msg.response.frame_size << std::endl;
 
-    std::vector<std::string>& frame_names = frame_msg.response.frame_name;
-    std::vector<std::string>& abs_paths = frame_msg.response.parent_name;
-    std::vector<iiwa_msgs::JointQuantity>& joint_quantities = frame_msg.response.joint_position;
-    std::vector<geometry_msgs::Pose>& cart_world_positions = frame_msg.response.cart_world_position;
-    
-    std::vector<Frame*> frames;
-    for(int i=0;i<frame_msg.response.frame_size; i++){
+    std::vector<std::string> &frame_names = frame_msg.response.frame_name;
+    std::vector<std::string> &abs_paths = frame_msg.response.parent_name;
+    std::vector<iiwa_msgs::JointQuantity> &joint_quantities =
+        frame_msg.response.joint_position;
+    std::vector<geometry_msgs::Pose> &cart_world_positions =
+        frame_msg.response.cart_world_position;
+
+    std::vector<Frame *> frames;
+    for (int i = 0; i < frame_msg.response.frame_size; i++) {
       auto new_frame = new Frame(7);
-      auto & jq = joint_quantities[i];
-      new_frame->set_joint_pos(std::vector<double>{jq.a1,jq.a2,jq.a3,jq.a4,jq.a5,jq.a6,jq.a7});
-      int status = 2;// TODO
-      new_frame->set_cart_pos(std::make_pair(cart_world_positions[i], status));
+      auto &jq = joint_quantities[i];
+      new_frame->set_joint_pos(
+          std::vector<double>{jq.a1, jq.a2, jq.a3, jq.a4, jq.a5, jq.a6, jq.a7});
+
+      new_frame->set_cart_pos(
+          std::make_pair(cart_world_positions[i],
+                         stoi(frame_msg.response.status[i])));  
       frames.emplace_back(new_frame);
     }
 
-    KukaTreeNode* tree_root = generate_tree(frame_names, abs_paths, frames);
+    KukaTreeNode *tree_root = generate_tree(frame_names, abs_paths, frames);
     return tree_root;
   }
 
