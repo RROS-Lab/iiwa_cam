@@ -49,12 +49,12 @@ class KukaTreeNode {
   cam::Frame *frame;
 
   KukaTreeNode(const std::string &_name,
-               const std::vector<std::string> &ancester_names,
-               KukaTreeNode *parent, cam::Frame *frame) {
-    this->name = name;
-    this->ancester_names = ancester_names;
-    this->parent = parent;
-    this->frame = frame;
+               const std::vector<std::string> &_ancester_names,
+               KukaTreeNode *_parent, cam::Frame *_frame) {
+    name = _name;
+    ancester_names = _ancester_names;
+    parent = _parent;
+    frame = _frame;
   }
 
   KukaTreeNode *get_child(const std::string &childname) {
