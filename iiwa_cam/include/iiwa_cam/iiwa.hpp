@@ -44,7 +44,7 @@ constexpr int UNDEFINED_STATUS = -1;
 namespace cam {
 
 /**
- * @brief read cartesian trajectory data from a file specified by file_name,
+ * @brief Read cartesian trajectory data from a file specified by file_name,
  * solve the trajectory in the vector traj
  *
  * @param file
@@ -329,14 +329,14 @@ class Kuka {
   }
 
   /**
-   * @brief set the printer enabled status
+   * @brief Set the printer enabled status
    *
    * @param print set the parameter to true to print logger message
    */
   void set_printer(const bool &print) { m_print_info = print; }
 
   /**
-   * @brief Get the End Effector State class of this kuka, which allows
+   * @brief Get the End Effector State object of this kuka, which allows
    * recording path and getting the real time cartesian position
    *
    * @return EndEffectorState&

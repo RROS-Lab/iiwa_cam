@@ -4,11 +4,13 @@
 1. [Kuka Class](#kuka-class)
 1. [Kuka with MoveIt!](wiki/KukaMoveIt.md)
 1. [Microservices](./wiki/KukaMicroservices.md)
-1. [More about Kuka Class](wiki/KukaClassDetails.md)
 1. [Dependencies](#dependencies)
 
 ## Kuka Class 
 The Kuka class impelements common functions for controlling the KUKA manipulator through ROS C++
+
+**Reference for the cam::Kuka Class:**
+- [Reference](./wiki/KukaClassReference.md)
 
 **Source File:**   
 - [iiwa.hpp](./include/iiwa_cam/iiwa.hpp): includes definition of the cam::Kuka class
