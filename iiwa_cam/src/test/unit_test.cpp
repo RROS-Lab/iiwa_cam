@@ -2,21 +2,15 @@
 
 #include <iiwa.hpp>
 
-void test1() {
-  // cam::Frame frame(7);
-  // auto cart = frame.get_cartesian_pos();
+void test1(int argc, char *argv[]) {
+  ros::init(argc, argv, "cam_unit_test1");
 
-  // cart.push_back(1);
-  // auto &in = cart;
-  // cam::print_vec(in);
-  // cam::print_vec(frame.get_joint_pos());
+  cam::Kuka kuka;
 
-  // frame.set_joint_pos(in);
+  cam::print_tree(kuka.get_recorded_frames());
 
-  // cam::print_vec(frame.get_joint_pos());
-
-  // in.push_back(22);
-  // cam::print_vec(frame.get_joint_pos());
+  ros::spin();
+  ros::shutdown();
 }
 
 void test2(int argc, char *argv[]) {
@@ -53,9 +47,8 @@ void test3(int argc, char *argv[]) {
   ros::init(argc, argv, "cam_unit_test3");
   ros::NodeHandle nh;
 
-    cam::Kuka kuka;
-    kuka.get_recorded_frames();
-
+  cam::Kuka kuka;
+  kuka.get_recorded_frames();
 
   ros::spin();
   ros::shutdown();
@@ -85,11 +78,10 @@ void csv_reader_test(int argc, char *argv[]) {
 }
 
 void csv_writer_test() {
-  
   // std::ofstream stream("foo.csv");
   std::ofstream stream;
-  stream.open("foo.csv",std::ios::out);
-  
+  stream.open("foo.csv", std::ios::out);
+
   csv2::Writer<csv2::delimiter<','>> writer(stream);
 
   std::vector<std::vector<std::string>> rows = {
@@ -101,27 +93,13 @@ void csv_writer_test() {
   stream.close();
 }
 
-#include <cstdio>
-#include <thread>
-void fun1() {
-  for (int i = 0; i < 20; i++) printf("fun1: %d\n", i + 1);
-}
-
-void mt_test1(int argc, char *argv[]) {
-  std::thread t1(fun1);
-  for (int i = 0; i < 20; i++) printf("test1: %d\n", i + 1);
-  t1.join();
-}
-
 int main(int argc, char *argv[]) {
-  // test1();
+  test1(argc, argv);
   // test2(argc, argv);
   // test3(argc, argv);
 
   // if (argc > 1) csv_reader_test(argc, argv);
-  csv_writer_test();
-
-
+  // csv_writer_test();
 
   // mt_test1(argc, argv);
 

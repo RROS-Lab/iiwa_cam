@@ -24,7 +24,8 @@ class Frame {
   const std::vector<double> &get_joint_pos() const { return joint_pos; }
 
   bool set_joint_pos(const std::vector<double> &joint_position) {
-    if (joint_position.size() != joints_num) return false;
+    if (joint_position.size() != joints_num)
+      return false;
     joint_pos = joint_position;
     return true;
   }
@@ -36,6 +37,7 @@ class Frame {
 };
 }  // namespace cam
 
+namespace cam {
 class KukaTreeNode {
  private:
   std::string name;
@@ -46,7 +48,7 @@ class KukaTreeNode {
  public:
   cam::Frame *frame;
 
-  KukaTreeNode(const std::string &name,
+  KukaTreeNode(const std::string &_name,
                const std::vector<std::string> &ancester_names,
                KukaTreeNode *parent, cam::Frame *frame) {
     this->name = name;
@@ -56,17 +58,16 @@ class KukaTreeNode {
   }
 
   KukaTreeNode *get_child(const std::string &childname) {
-    for (std::vector<KukaTreeNode *>::iterator it = this->children.begin();
-         it != this->children.end(); it++) {
+    for (auto it = children.begin(); it != children.end(); it++) {
       if ((*it)->name == childname) {
         return *it;
       }
     }
-    std::cout << childname << " is not a child of " << this->name << std::endl;
+    std::cout << childname << " is not a child of " << name << std::endl;
     return nullptr;
   }
 
-  std::vector<KukaTreeNode *> get_children() { return this->children; }
+  std::vector<KukaTreeNode *> get_children() { return children; }
 
   std::string get_name() { return name; }
 
@@ -99,7 +100,6 @@ std::vector<std::string> string2vector(const std::string &abs_paths) {
 
 KukaTreeNode *insert_node(const std::string &name, const std::string &abs_path,
                           KukaTreeNode *prev_node, cam::Frame *frame) {
-  
   // compare abs_path of the new node with abs_path of the prev_node
   // if matches -> set prev_node to be the new node's parent node
   // otherwise -> check if path of the earlier node matches the path
@@ -120,7 +120,8 @@ KukaTreeNode *insert_node(const std::string &name, const std::string &abs_path,
     parent_node = parent_node->parent;
   }
 
-  new_node = new KukaTreeNode(name, string2vector(abs_path), parent_node, frame);
+  new_node =
+      new KukaTreeNode(name, string2vector(abs_path), parent_node, frame);
   parent_node->children.push_back(new_node);
 
   return new_node;
@@ -129,7 +130,6 @@ KukaTreeNode *insert_node(const std::string &name, const std::string &abs_path,
 KukaTreeNode *generate_tree(const std::vector<std::string> &frame_names,
                             std::vector<std::string> &abs_paths,
                             std::vector<cam::Frame *> &frames) {
-  
   // add /r to front of all elements in abs_paths
   std::vector<KukaTreeNode *> children;
   KukaTreeNode *parent;
@@ -145,7 +145,8 @@ KukaTreeNode *generate_tree(const std::vector<std::string> &frame_names,
   KukaTreeNode *prev_node = root;
 
   // create tree
-  for (std::vector<std::string>::size_type i = 0; i != frame_names.size(); i++) {
+  for (std::vector<std::string>::size_type i = 0; i != frame_names.size();
+       i++) {
     prev_node = insert_node(frame_names[i], abs_paths[i], prev_node, frames[i]);
   }
   return root;
@@ -179,3 +180,5 @@ std::vector<std::string> print_tree(KukaTreeNode *tree_root) {
   print_string_vector(ans);  // preorder trasversal
   return ans;
 }
+
+}  // namespace cam

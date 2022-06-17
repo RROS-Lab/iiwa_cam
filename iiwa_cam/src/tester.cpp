@@ -2,7 +2,7 @@
 // replace string vector with strings
 
 #include <tree_generator.hpp>
-
+using namespace cam;
 
 void test1(std::vector<std::string> frame_names, std::vector<std::string> abs_paths) {
   
