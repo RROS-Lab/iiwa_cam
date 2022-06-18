@@ -250,7 +250,7 @@ class Kuka {
     // see pdf 391
 
     // set frame id (important!)
-    poseStamped.header.frame_id = "iiwa_link_0";
+    poseStamped.header.frame_id = iiwa_name + "_link_0";
 
     // set cartesian position
     poseStamped.pose = pose;
@@ -685,7 +685,7 @@ class Kuka {
 
     // set cartesian position
     poseStamped.pose = pose;
-    poseStamped.header.frame_id = "iiwa_link_0";
+    poseStamped.header.frame_id = iiwa_name + "_link_0";
 
     cart_ptp_droppable_pub.publish(poseStamped);
   }
@@ -765,7 +765,7 @@ class Kuka {
 
     // set cartesian position
     poseStamped.pose = pose;
-    poseStamped.header.frame_id = "iiwa_link_0";
+    poseStamped.header.frame_id = iiwa_name + "_link_0";
 
     cart_lin_droppable_pub.publish(poseStamped);
   }
@@ -788,7 +788,7 @@ class Kuka {
 
     iiwa_msgs::MoveAlongSplineAction spline_act_msg;
 
-    spline_act_msg.action_goal.header.frame_id = "iiwa_link_0";
+    spline_act_msg.action_goal.header.frame_id = iiwa_name + "_link_0";
 
     auto &seg_vec = spline_act_msg.action_goal.goal.spline.segments;
 
@@ -801,7 +801,7 @@ class Kuka {
       iiwa_msgs::SplineSegment seg;
       seg.type = iiwa_msgs::SplineSegment::SPL;
 
-      seg.point.poseStamped.header.frame_id = "iiwa_link_0";
+      seg.point.poseStamped.header.frame_id = iiwa_name + "_link_0";
       seg.point.redundancy.status = *status_iter;
       status_iter++;
 
