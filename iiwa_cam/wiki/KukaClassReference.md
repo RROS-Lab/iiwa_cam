@@ -42,7 +42,7 @@
 
 ## Inner Class
 ### cam::Kuka::EndEffectorState Class
-This class works as a client for the [End Effector State Services](./KukaMicroservices.md#end-effector-state-services). If you want to record cartesian position path, wrech along the path, or get the real time cartesian position of the end effector during the runtime of a c++ program, you need to start this server before you run the c++ program. The usage is elaborated in the above link.
+This class works as a client for the [End Effector State Services](./KukaMicroservices.md#end-effector-state-services). If you want to record cartesian position path, wrench along the path, or get the real time cartesian position of the end effector during the runtime of a c++ program, you need to start this server before you run the c++ program. The usage is elaborated in the above link.
 
 ## Member Functions
 
@@ -102,7 +102,7 @@ function controls the velocity, accelaration, and jerk of [exe_cart_traj](#execa
 KukaTreeNode *get_recorded_frames();
 ```
 
-Get the saved frames from teaching pendant, the Parent frames should be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
+Get the saved frames from teaching pendant, the direct children of the world frame should be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
 
 ### end_effector_state
 ```cpp
@@ -115,6 +115,8 @@ Get the End Effector State object of this kuka, which allows recording path and 
 
 ### move_joint_ptp
 ```cpp
+void move_joint_ptp(KukaTreeNode *node, const double sleep_time = 500.0);
+
 void move_joint_ptp(const std::vector<double> &vec,
                     const double sleep_time = 500.0);
 
@@ -142,6 +144,8 @@ Move kuka point to point (PTP) assigned by joint space goal. The unit of joint p
 
 ### move_cart_ptp
 ```cpp
+void move_cart_ptp(KukaTreeNode *node, const double sleep_time = 500.0);
+
 void move_cart_ptp(const geometry_msgs::Pose &pose,
                    const int status = UNDEFINED_STATUS,
                    const double sleep_time = 500.0);

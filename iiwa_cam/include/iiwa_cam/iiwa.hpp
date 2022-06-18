@@ -344,15 +344,14 @@ class Kuka {
   EndEffectorState &end_effector_state() { return ee_state; }
 
   /**
-   * @brief Get the saved frames from teaching pendant, the Parent frames should
-   * be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
+   * @brief Get the saved frames from teaching pendant, the direct children of
+   * the world frame should be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
    *
    */
-  KukaTreeNode *get_recorded_frames() {  
-
+  KukaTreeNode *get_recorded_frames() {
     iiwa_msgs::GetFrames frame_msg;
     frames_client.call(frame_msg);
-    std::cout << "get " << frame_msg.response.frame_size << std::endl;
+    // std::cout << "get " << frame_msg.response.frame_size << std::endl;
 
     std::vector<std::string> &frame_names = frame_msg.response.frame_name;
     std::vector<std::string> &abs_paths = frame_msg.response.parent_name;
@@ -368,9 +367,8 @@ class Kuka {
       new_frame->set_joint_pos(
           std::vector<double>{jq.a1, jq.a2, jq.a3, jq.a4, jq.a5, jq.a6, jq.a7});
 
-      new_frame->set_cart_pos(
-          std::make_pair(cart_world_positions[i],
-                         stoi(frame_msg.response.status[i])));  
+      new_frame->set_cart_pos(std::make_pair(
+          cart_world_positions[i], stoi(frame_msg.response.status[i])));
       frames.emplace_back(new_frame);
     }
 
@@ -547,6 +545,17 @@ class Kuka {
    * @brief Move kuka point to point (PTP) assigned by joint space goal. The
    * unit of joint position is radiant
    *
+   * @param node KukaTreeNode*
+   * @param sleep_time default = 500 ms
+   */
+  void move_joint_ptp(KukaTreeNode *node, const double sleep_time = 500.0) {
+    move_joint_ptp(node->frame->get_joint_pos(), sleep_time);
+  }
+
+  /**
+   * @brief Move kuka point to point (PTP) assigned by joint space goal. The
+   * unit of joint position is radiant
+   *
    * @param vec
    * @param sleep_time default = 500 ms
    */
@@ -610,6 +619,18 @@ class Kuka {
     joint_pos.position.a6 = j6;
     joint_pos.position.a7 = j7;
     joint_ptp_droppable_pub.publish(joint_pos);
+  }
+
+  /**
+   * @brief Move kuka point to point (PTP) assigned by cartesian space goal. The
+   * unit of cartesian position is meter
+   *
+   * @param node KukaTreeNode*
+   * @param sleep_time default = 500 ms
+   */
+  void move_cart_ptp(KukaTreeNode *node, const double sleep_time = 500.0) {
+    auto &pair = node->frame->get_cartesian_pos();
+    move_cart_ptp(pair.first, pair.second, sleep_time);
   }
 
   /**

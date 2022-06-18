@@ -30,7 +30,19 @@ class Frame {
     return true;
   }
 
+  bool set_joint_pos(std::vector<double> &&joint_position) {
+    if (joint_position.size() != joints_num)
+      return false;
+    joint_pos = joint_position;
+    return true;
+  }
+
   bool set_cart_pos(const std::pair<geometry_msgs::Pose, int> &cart_position) {
+    cart_pos = cart_position;
+    return true;
+  }
+
+  bool set_cart_pos(std::pair<geometry_msgs::Pose, int> &&cart_position) {
     cart_pos = cart_position;
     return true;
   }

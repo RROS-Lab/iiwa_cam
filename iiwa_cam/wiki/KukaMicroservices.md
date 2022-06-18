@@ -21,7 +21,7 @@
    **Description**: Get joint space trajectory plan by moveit, execute it (require specifying robot name)
 
 
--  **Note**: For multiple robots, you may need to change the source code of services above (the topic name that RViz publishes and receives)
+-  **Note**: For multiple robots, you may need to change the source code of services above (the topic name that RViz publishes and receivers)
 
   1. Load the manipulator into RViz:   
     `roslaunch iiwa_cam_moveit demo.launch`  

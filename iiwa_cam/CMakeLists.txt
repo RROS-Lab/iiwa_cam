@@ -166,6 +166,10 @@ add_executable(cartesian_spline_node
   src/demo/cartesian_spline_node.cpp
 )
 
+add_executable(get_frames_node 
+  src/demo/get_frames_node.cpp
+)
+
 add_executable(joint_pose_control_node 
   src/demo/joint_pose_control_node.cpp
 )
@@ -227,6 +231,10 @@ add_dependencies(cartesian_spline_node
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
+add_dependencies(get_frames_node
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
 add_dependencies(joint_pose_control_node
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
@@ -270,8 +278,11 @@ target_link_libraries(cartesian_ptp_pose_control_node
   ${catkin_LIBRARIES}
 )
 
-
 target_link_libraries(cartesian_spline_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(get_frames_node
   ${catkin_LIBRARIES}
 )
 
