@@ -134,6 +134,7 @@ include_directories(
 #   src/${PROJECT_NAME}/iiwa_cam.cpp
 # )
 
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -165,6 +166,10 @@ add_executable(cartesian_spline_node
   src/demo/cartesian_spline_node.cpp
 )
 
+add_executable(get_frames_node 
+  src/demo/get_frames_node.cpp
+)
+
 add_executable(joint_pose_control_node 
   src/demo/joint_pose_control_node.cpp
 )
@@ -189,6 +194,11 @@ add_executable(moveit_rviz_state_receiver_service
 # unit test files
 add_executable(unit_test 
   src/test/unit_test.cpp
+)
+
+# get frame files
+add_executable(tester 
+  src/tester.cpp
 )
 
 ## Rename C++ executable without prefix
@@ -218,6 +228,10 @@ add_dependencies(cartesian_ptp_pose_control_node
 )
 
 add_dependencies(cartesian_spline_node
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
+add_dependencies(get_frames_node
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
@@ -264,8 +278,11 @@ target_link_libraries(cartesian_ptp_pose_control_node
   ${catkin_LIBRARIES}
 )
 
-
 target_link_libraries(cartesian_spline_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(get_frames_node
   ${catkin_LIBRARIES}
 )
 
@@ -295,6 +312,12 @@ target_link_libraries(moveit_rviz_state_receiver_service
 target_link_libraries(unit_test
   ${catkin_LIBRARIES}
 )
+
+# get frame files
+target_link_libraries(tester
+  ${catkin_LIBRARIES}
+)
+
 
 #############
 ## Install ##

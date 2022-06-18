@@ -1,4 +1,4 @@
-#include <iiwa_msgs/JointPositionVelocity.h>
+#include <iiwa_msgs/JointPosition.h>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit_msgs/DisplayTrajectory.h>
@@ -7,9 +7,11 @@
 
 #include <cmath>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
+#include <sstream>
+
+static ros::Publisher joint_state_pub;
 
 inline void print_vec(const std::vector<double> &vec) {
   auto vec_iter = vec.begin();
@@ -21,25 +23,30 @@ inline void print_vec(const std::vector<double> &vec) {
   std::cout << std::endl;
 }
 
-inline void assign_msg_to_vec(const iiwa_msgs::JointQuantity &msg,
-                              std::vector<double> &vec) {
-  vec.insert(vec.begin(),
-             {msg.a1, msg.a2, msg.a3, msg.a4, msg.a5, msg.a6, msg.a7});
+inline void assign_position_to_vec(const iiwa_msgs::JointPosition &msg,
+                           std::vector<double> &vec) {
+  vec.resize(7);
+  vec.at(0) = msg.position.a1;
+  vec.at(1) = msg.position.a2;
+  vec.at(2) = msg.position.a3;
+  vec.at(3) = msg.position.a4;
+  vec.at(4) = msg.position.a5;
+  vec.at(5) = msg.position.a6;
+  vec.at(6) = msg.position.a7;
 }
 
-void joint_state_callback(iiwa_msgs::JointPositionVelocityConstPtr msg,
-                          ros::Publisher &joint_state_pub) {
+void joint_state_callback(const iiwa_msgs::JointPosition &msg) {
   sensor_msgs::JointState new_msg;
-  new_msg.header = msg->header;
+  new_msg.velocity.resize(7);
+  new_msg.header.stamp = ros::Time().now();
 
-  for (int i = 1; i <= 7; i++) {
+  for (int i = 1; i<=7;i++) {
     std::stringstream ss;
-    ss << "iiwa_joint_" << i;
-
+    ss<<"iiwa_joint_"<<i;
+    
     new_msg.name.push_back(ss.str());
   }
-  assign_msg_to_vec(msg->position, new_msg.position);
-  assign_msg_to_vec(msg->velocity, new_msg.velocity);
+  assign_position_to_vec(msg, new_msg.position);
 
   joint_state_pub.publish(new_msg);
 }
@@ -47,23 +54,16 @@ void joint_state_callback(iiwa_msgs::JointPositionVelocityConstPtr msg,
 int main(int argc, char **argv) {
   ros::init(argc, argv, "moveit_rviz_state_receiver_service");
 
+  // ros::AsyncSpinner spinner(1);
+  // spinner.start();
+
   ros::NodeHandle nh;
 
-  std::string name = (argc >= 2) ? argv[1] : "iiwa";
-  std::string rob_ns = "/" + name;
+  ros::Subscriber moveit_sub =
+      nh.subscribe("/iiwa/state/JointPosition", 100, joint_state_callback);
 
-  auto joint_state_pub =
-      nh.advertise<sensor_msgs::JointState>("/joint_states", 100);
-
-  auto callback = boost::bind(&joint_state_callback, _1, joint_state_pub);
-
-  ros::Subscriber moveit_sub = nh.subscribe<iiwa_msgs::JointPositionVelocity>(
-      rob_ns + "/state/JointPositionVelocity", 100, callback);
-
-  std::cout << "MoveIt!-RViz Robot State Receiver is monitoring: " << name
-            << std::endl;
+  joint_state_pub = nh.advertise<sensor_msgs::JointState>("/joint_states", 100);
 
   ros::spin();
-
   return 0;
 }

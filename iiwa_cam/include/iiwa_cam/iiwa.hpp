@@ -25,6 +25,9 @@
 // csv2 lib for csv handling
 #include <csv2/csv2.hpp>
 
+// iiwa_cam header file
+#include <tree_generator.hpp>
+
 // C++ STL
 #include <atomic>
 #include <fstream>
@@ -41,7 +44,7 @@ constexpr int UNDEFINED_STATUS = -1;
 namespace cam {
 
 /**
- * @brief read cartesian trajectory data from a file specified by file_name,
+ * @brief Read cartesian trajectory data from a file specified by file_name,
  * solve the trajectory in the vector traj
  *
  * @param file
@@ -101,36 +104,6 @@ namespace cam {
 
 class Kuka;
 
-class Frame {
- private:
-  friend class Kuka;
-
-  int joints_num;
-  std::vector<double> joint_pos;
-  std::vector<double> cart_pos = std::vector<double>(7);  // X Y Z [W X Y Z]
-
- public:
-  Frame() = default;
-  Frame(int total_joints) : joints_num(total_joints), joint_pos(total_joints) {}
-
-  const std::vector<double> &get_cartesian_pos() const { return cart_pos; }
-  const std::vector<double> &get_joint_pos() const { return joint_pos; }
-
-  bool set_joint_pos(const std::vector<double> &joint_position) {
-    if (joint_position.size() != joints_num)
-      return false;
-    joint_pos = std::move(joint_position);
-    return true;
-  }
-
-  bool set_cart_pos(const std::vector<double> &cart_position) {
-    if (cart_position.size() != 7)
-      return false;
-    cart_pos = std::move(cart_position);
-    return true;
-  }
-};
-
 class Kuka {
  public:
   class EndEffectorState {
@@ -149,7 +122,7 @@ class Kuka {
         msg.request.record = true;
         msg.request.robot_name = name;
         msg.request.watchdog = true;
-        
+
         if (!watchdog_state)
           return;
         ee_recorder_client.call(msg);
@@ -356,14 +329,14 @@ class Kuka {
   }
 
   /**
-   * @brief set the printer enabled status
+   * @brief Set the printer enabled status
    *
    * @param print set the parameter to true to print logger message
    */
   void set_printer(const bool &print) { m_print_info = print; }
 
   /**
-   * @brief Get the End Effector State class of this kuka, which allows
+   * @brief Get the End Effector State object of this kuka, which allows
    * recording path and getting the real time cartesian position
    *
    * @return EndEffectorState&
@@ -371,14 +344,36 @@ class Kuka {
   EndEffectorState &end_effector_state() { return ee_state; }
 
   /**
-   * @brief Get the saved frames from teaching pendant, the Parent frames should
-   * be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
+   * @brief Get the saved frames from teaching pendant, the direct children of
+   * the world frame should be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
    *
    */
-  void get_recorded_frames() {  // TODO
+  KukaTreeNode *get_recorded_frames() {
     iiwa_msgs::GetFrames frame_msg;
     frames_client.call(frame_msg);
-    std::cout << "get " << frame_msg.response.frame_size << std::endl;
+    // std::cout << "get " << frame_msg.response.frame_size << std::endl;
+
+    std::vector<std::string> &frame_names = frame_msg.response.frame_name;
+    std::vector<std::string> &abs_paths = frame_msg.response.parent_name;
+    std::vector<iiwa_msgs::JointQuantity> &joint_quantities =
+        frame_msg.response.joint_position;
+    std::vector<geometry_msgs::Pose> &cart_world_positions =
+        frame_msg.response.cart_world_position;
+
+    std::vector<Frame *> frames;
+    for (int i = 0; i < frame_msg.response.frame_size; i++) {
+      auto new_frame = new Frame(7);
+      auto &jq = joint_quantities[i];
+      new_frame->set_joint_pos(
+          std::vector<double>{jq.a1, jq.a2, jq.a3, jq.a4, jq.a5, jq.a6, jq.a7});
+
+      new_frame->set_cart_pos(std::make_pair(
+          cart_world_positions[i], stoi(frame_msg.response.status[i])));
+      frames.emplace_back(new_frame);
+    }
+
+    KukaTreeNode *tree_root = generate_tree(frame_names, abs_paths, frames);
+    return tree_root;
   }
 
   /**
@@ -550,6 +545,17 @@ class Kuka {
    * @brief Move kuka point to point (PTP) assigned by joint space goal. The
    * unit of joint position is radiant
    *
+   * @param node KukaTreeNode*
+   * @param sleep_time default = 500 ms
+   */
+  void move_joint_ptp(KukaTreeNode *node, const double sleep_time = 500.0) {
+    move_joint_ptp(node->frame->get_joint_pos(), sleep_time);
+  }
+
+  /**
+   * @brief Move kuka point to point (PTP) assigned by joint space goal. The
+   * unit of joint position is radiant
+   *
    * @param vec
    * @param sleep_time default = 500 ms
    */
@@ -613,6 +619,18 @@ class Kuka {
     joint_pos.position.a6 = j6;
     joint_pos.position.a7 = j7;
     joint_ptp_droppable_pub.publish(joint_pos);
+  }
+
+  /**
+   * @brief Move kuka point to point (PTP) assigned by cartesian space goal. The
+   * unit of cartesian position is meter
+   *
+   * @param node KukaTreeNode*
+   * @param sleep_time default = 500 ms
+   */
+  void move_cart_ptp(KukaTreeNode *node, const double sleep_time = 500.0) {
+    auto &pair = node->frame->get_cartesian_pos();
+    move_cart_ptp(pair.first, pair.second, sleep_time);
   }
 
   /**

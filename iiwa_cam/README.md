@@ -4,11 +4,13 @@
 1. [Kuka Class](#kuka-class)
 1. [Kuka with MoveIt!](wiki/KukaMoveIt.md)
 1. [Microservices](./wiki/KukaMicroservices.md)
-1. [More about Kuka Class](wiki/KukaClassDetails.md)
 1. [Dependencies](#dependencies)
 
 ## Kuka Class 
 The Kuka class impelements common functions for controlling the KUKA manipulator through ROS C++
+
+**Reference for the cam::Kuka Class:**
+- [Reference](./wiki/KukaClassReference.md)
 
 **Source File:**   
 - [iiwa.hpp](./include/iiwa_cam/iiwa.hpp): includes definition of the cam::Kuka class
@@ -24,6 +26,15 @@ The Kuka class impelements common functions for controlling the KUKA manipulator
 ## Microservice List
 - [MoveIt! - RViz Support Services](./wiki/KukaMicroservices.md#moveit---rviz-support-services)
 - [End Effector State Services ](./wiki/KukaMicroservices.md#end-effector-state-services)
+
+
+## Dependencies
+- [iiwa_stack_cam](https://github.com/RROS-Lab/iiwa_stack_cam) (need installation)
+- [csv2](https://github.com/p-ranav/csv2) (included already)
+
+## Microservice List
+- [Path Recording](./wiki/KukaMicroservices.md#path-recording)
+- [End Effector Wrench Visulization](./wiki/KukaMicroservices.md#end-effector-wrench-visulization)
 
 
 ## Dependencies
