@@ -79,7 +79,7 @@
 
 ### End Effector Path Recording
 
-  **Watchdog Machanisim**:  
+  **Watchdog Machanism**:  
   - [Wikipedia: Watchdog timer](https://en.wikipedia.org/wiki/Watchdog_timer)
   - The watchdog machanisim is introduced to this server, which allows the server stop recording when a client crashes. Once the client setup a watchdog, it should feed the dog with a frequency higher than **0.2** Hz （recommend 4 seconds between two feeds)
 
@@ -99,7 +99,7 @@
       `record: false`  
       `watchdog: false`  
 
-  1. In a terminal: (protected by the **watchdog machanisim**)  
+  1. In a terminal: (protected by the **watchdog machanism**)  
       - Start recording by calling service `/cam/iiwa/PathRecorder`, with parameters:   
       `robot_name: [robot name]`  
       `record: true`  
@@ -116,7 +116,7 @@
       `record: false`  
       `watchdog: true`  
 
-  1.  In C++ program: (protected by the **watchdog machanisim**)  
+  1.  In C++ program: (protected by the **watchdog machanism**)  
     call `cam::Kuka::end_effector_state()::start_recording()` and `cam::Kuka::end_effector_state()::end_recording()`
       ```cpp
       kuka.end_effector_state().start_recording();

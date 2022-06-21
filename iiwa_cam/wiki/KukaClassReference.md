@@ -1,4 +1,4 @@
-# Kuka ROS Tutorial - CAM::KUKA Class Reference
+# Kuka ROS Tutorial - CAM::KUKA Class API Reference
 
 [Home](../README.md)
 
@@ -57,7 +57,8 @@ description in the KUKA manuals) of droppable move including
 
 **Demo File:**  [cartesian_lin_drop_pose_control_node.cpp](../src/demo/cartesian_lin_drop_pose_control_node.cpp)
 
-    
+---   
+
 ### set_vel_acc_lin_drop
 
 ```cpp
@@ -71,6 +72,8 @@ description in the KUKA manuals) of droppable cartesian linear move:
 
 **Demo File:**  [cartesian_lin_drop_pose_control_node.cpp](../src/demo/cartesian_lin_drop_pose_control_node.cpp)
 
+---   
+
 ### set_vel_acc
 ```cpp
 bool set_vel_acc(const double vel = 0.1, const double acc = 0.1)
@@ -81,6 +84,8 @@ controls the velocity and accelaration of [move_joint_ptp](#movejointptp), [move
 
 **Demo File:**  [cartesian_lin_pose_control_node.cpp](../src/demo/cartesian_lin_pose_control_node.cpp)
 
+
+---   
 
 ### set_cart_traj_vel_acc
 ```cpp
@@ -97,12 +102,16 @@ function controls the velocity, accelaration, and jerk of [exe_cart_traj](#execa
 **Demo File:**  [cartesian_spline_node.cpp](../src/demo/cartesian_spline_node.cpp)
 
 
+---   
+
 ### get_recorded_frames
 ```cpp
 KukaTreeNode *get_recorded_frames();
 ```
 
 Get the saved frames from teaching pendant, the direct children of the world frame should be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
+
+---   
 
 ### end_effector_state
 ```cpp
@@ -112,6 +121,8 @@ EndEffectorState &end_effector_state()
 Get the End Effector State object of this kuka, which allows recording path and getting the real time cartesian position
 
 
+
+---   
 
 ### move_joint_ptp
 ```cpp
@@ -130,6 +141,8 @@ Move kuka point to point (PTP) assigned by joint space goal. The unit of joint p
 
 **Demo File:**  [joint_pose_control_node.cpp](../src/demo/joint_pose_control_node.cpp)
 
+---   
+
 ### move_joint_ptp_drop
 ```cpp
 void move_joint_ptp_drop(const std::vector<double> &vec);
@@ -141,6 +154,8 @@ void move_joint_ptp_drop(const double &j1, const double &j2, const double &j3,
 ```
 Move kuka point to point (PTP) assigned by joint space goal. The unit of joint position is radiant. The robot will abandon previous goal when it receive a new goal, even when it is still executing.
 
+
+---   
 
 ### move_cart_ptp
 ```cpp
@@ -161,6 +176,8 @@ Move kuka point to point (PTP) assigned by cartesian space goal. The unit of car
 
 **Demo File:**  [cartesian_ptp_pose_control_node.cpp](../src/demo/cartesian_ptp_pose_control_node.cpp)
 
+---   
+
 ### move_cart_ptp_drop
 ```cpp
 void move_cart_ptp_drop(const geometry_msgs::Pose &pose);
@@ -176,6 +193,8 @@ Move kuka point to point (PTP) assigned by cartesian space goal. The unit of car
 **Demo File:**  [cartesian_ptp_drop_pose_control_node.cpp](../src/demo/cartesian_ptp_drop_pose_control_node.cpp)
 
 
+
+---   
 
 ### move_cart_lin
 ```cpp
@@ -194,6 +213,8 @@ Move kuka linearly (LIN) assigned by cartesian space goal. The unit of cartesian
 **Demo File:**  [cartesian_lin_pose_control_node.cpp](../src/demo/cartesian_lin_pose_control_node.cpp)
 
 
+---   
+
 ### move_cart_lin_drop
 ```cpp
 void move_cart_lin_drop(const geometry_msgs::Pose &pose)
@@ -202,6 +223,8 @@ void move_cart_lin_drop(const geometry_msgs::Pose &pose)
 Move kuka linearly (LIN) assigned by cartesian space goal. The unit of cartesian position is meter. The robot will abandon previous goal when it receive a new goal, even when it is still executing.
 
 **Demo File:**  [cartesian_lin_drop_pose_control_node.cpp](../src/demo/cartesian_lin_drop_pose_control_node.cpp)
+
+---   
 
 ### exe_cart_traj
 ```cpp
@@ -212,6 +235,8 @@ void exe_cart_traj(const std::vector<geometry_msgs::Pose> &trajectory,
 Move robot along a trajectory in cartesian space, use set_cart_traj_vel_acc() before this method to set speed
 
 **Demo File:**  [cartesian_spline_node.cpp](../src/demo/cartesian_spline_node.cpp)
+
+---   
 
 ### exe_joint_traj
 ```cpp
@@ -224,6 +249,8 @@ Move robot along a trajectory in joint space
 
 **Demo File:** [moveit_rviz_exec_service.cpp](../src/utilities/moveit_rviz_exec_service.cpp)
 
+---   
+
 ### set_printer
 ```cpp
 void set_printer(const bool &print)
@@ -232,3 +259,5 @@ void set_printer(const bool &print)
 Set the printer enabled status
 
 **Demo File:**  [cartesian_lin_drop_pose_control_node.cpp](../src/demo/cartesian_lin_drop_pose_control_node.cpp)
+
+---   
