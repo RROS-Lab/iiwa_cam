@@ -122,6 +122,7 @@ EndEffectorState &end_effector_state()
 
 Get the End Effector State object of this kuka, which allows recording path and getting the real time cartesian position
 
+See usage at [End Effector State Services](./KukaMicroservices.md#end-effector-state-services) 
 
 
 ---   
@@ -249,8 +250,8 @@ void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
 
 Move robot along a trajectory in joint space
 
-- velocity: joint space velocity
-- stiffX, stiffY, stiffZ: stiffness on X, Y, and Z, (0.1 ~ 5000)
+- `velocity`: joint space velocity
+- `stiffX, stiffY, stiffZ`: stiffness on X, Y, and Z, (0.1 ~ 5000)
 
 **Demo File:** [moveit_rviz_exec_service.cpp](../src/utilities/moveit_rviz_exec_service.cpp)
 
@@ -262,7 +263,7 @@ void set_printer(const bool &print)
 ```
 
 Set the printer enabled status
-- print == true: print messages
+- `print`: if true, print messages 
 
 **Demo File:**  [cartesian_lin_drop_pose_control_node.cpp](../src/demo/cartesian_lin_drop_pose_control_node.cpp)
 
