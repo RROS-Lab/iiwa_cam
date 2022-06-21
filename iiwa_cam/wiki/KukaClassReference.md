@@ -111,6 +111,8 @@ KukaTreeNode *get_recorded_frames();
 
 Get the saved frames from teaching pendant, the direct children of the world frame should be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
 
+**Demo File:**  [get_frames_node.cpp](../src/demo/get_frames_node.cpp)
+
 ---   
 
 ### end_effector_state
@@ -242,10 +244,13 @@ Move robot along a trajectory in cartesian space, use set_cart_traj_vel_acc() be
 ```cpp
 void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
                     const double velocity = 0.1, const double stiffX = 2000,
-                    const double stiffY = 2000, const double stiffZ = 2000)
+                    const double stiffY = 2000,  const double stiffZ = 2000)
 ```
 
 Move robot along a trajectory in joint space
+
+- velocity: joint space velocity
+- stiffX, stiffY, stiffZ: stiffness on X, Y, and Z, (0.1 ~ 5000)
 
 **Demo File:** [moveit_rviz_exec_service.cpp](../src/utilities/moveit_rviz_exec_service.cpp)
 
@@ -257,6 +262,7 @@ void set_printer(const bool &print)
 ```
 
 Set the printer enabled status
+- print == true: print messages
 
 **Demo File:**  [cartesian_lin_drop_pose_control_node.cpp](../src/demo/cartesian_lin_drop_pose_control_node.cpp)
 

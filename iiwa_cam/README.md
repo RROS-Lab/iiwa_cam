@@ -9,11 +9,11 @@
 ## Kuka Class 
 The Kuka class impelements common functions for controlling the KUKA manipulator through ROS C++
 
-**Reference for the cam::Kuka Class:**
-- [Reference](./wiki/KukaClassReference.md)
+**APIs of the cam::Kuka Class:**
+- [API Reference](./wiki/KukaClassReference.md)
 
 **Source File:**   
-- [iiwa.hpp](./include/iiwa_cam/iiwa.hpp): includes definition of the cam::Kuka class
+- [iiwa.hpp](./include/iiwa_cam/iiwa.hpp): definition and implementation of the cam::Kuka class
 
 **Demo Files:** 
 - [cartesian_lin_drop_pose_control_node.cpp](./src/demo/cartesian_lin_drop_pose_control_node.cpp):  move kuka linearly assigned by a droppable cartesian space goal  
@@ -21,6 +21,7 @@ The Kuka class impelements common functions for controlling the KUKA manipulator
 - [cartesian_ptp_drop_pose_control_node.cpp](./src/demo/cartesian_ptp_drop_pose_control_node.cpp):  move kuka point to point assigned by a droppable cartesian space goal  
 - [cartesian_ptp_pose_control_node.cpp](./src/demo/cartesian_ptp_pose_control_node.cpp):  move kuka point to point assigned by a cartesian space goal  
 - [cartesian_spline_node.cpp](./src/demo/cartesian_spline_node.cpp):  move robot along a trajectory in cartesian space  
+- [get_frames_node.cpp](./src/demo/get_frames_node.cpp): move robot to pre-set points using cam::Kuka::get_recorded_frames
 - [joint_pose_control_node.cpp](./src/demo/joint_pose_control_node.cpp):  move kuka point to point assigned by a joint space goal
 
 ## Microservice List

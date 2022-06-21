@@ -1,7 +1,7 @@
 /**
  * @file get_frames_node.cpp
- * @author Peijie Xu (peijiexu@usc.edu)
- * @brief This file shows how to move robot to several points using
+ * @author Peijie Xu (peijiexu@usc.edu), Zhubo Zhou (zhubozho@usc.edu)
+ * @brief This file shows how to move robot to pre-set points using
  * cam::Kuka::get_recorded_frames
  * @version 0.1
  * @date 2022-06-17
