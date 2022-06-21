@@ -26,19 +26,10 @@ The Kuka class impelements common functions for controlling the KUKA manipulator
 ## Microservice List
 - [MoveIt! - RViz Support Services](./wiki/KukaMicroservices.md#moveit---rviz-support-services)
 - [End Effector State Services ](./wiki/KukaMicroservices.md#end-effector-state-services)
+- [Services from Original iiwa_stack](./wiki/KukaMicroservices.md#services-from-original-iiwastack)
 
 
 ## Dependencies
 - [iiwa_stack_cam](https://github.com/RROS-Lab/iiwa_stack_cam) (need installation)
 - [csv2](https://github.com/p-ranav/csv2) (included already)
-
-## Microservice List
-- [Path Recording](./wiki/KukaMicroservices.md#path-recording)
-- [End Effector Wrench Visulization](./wiki/KukaMicroservices.md#end-effector-wrench-visulization)
-
-
-## Dependencies
-- [iiwa_stack_cam](https://github.com/RROS-Lab/iiwa_stack_cam) (need installation)
-- [csv2](https://github.com/p-ranav/csv2) (included already)
-
 

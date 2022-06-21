@@ -824,9 +824,11 @@ class Kuka {
    *
    * @param trajectory
    * @param velocity joint relative speed, default = 0.1
+   * @param stidd stiffness on X, Y, Z, default = 2000
    */
   void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                      const double velocity = 0.1) {
+                      const double velocity = 0.1, const double stiffX = 2000,
+                      const double stiffY = 2000, const double stiffZ = 2000) {
     iiwa_msgs::Spline spline_msg;
     const auto &traj_vec = trajectory.joint_trajectory.points;
 
@@ -855,6 +857,10 @@ class Kuka {
 
     spline_msg.segments.at(0).point.poseStamped.header.frame_id =
         std::to_string(velocity);
+
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.x = stiffX;
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.y = stiffY;
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.z = stiffZ;
 
     move_joint_ptp(traj_vec.begin()->positions);
 

@@ -8,7 +8,7 @@ static cam::Kuka* kuka;
 
 void moveit_callback(const moveit_msgs::ExecuteTrajectoryActionGoal &msg) {
   auto &traj = msg.goal.trajectory;
-  kuka->exe_joint_traj(traj,0.3);
+  kuka->exe_joint_traj(traj,0.3,5000,5000,5000);
 }
 
 int main(int argc, char **argv) {

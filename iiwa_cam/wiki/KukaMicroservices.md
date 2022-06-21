@@ -8,6 +8,9 @@
     - [Current Cartesian Position](#end-effector-current-cartesian-position-inquiry)
     - [Path Recording](#end-effector-path-recording)
     - [Wrench Visulization](#end-effector-wrench-visulization)
+- [Services from Original iiwa_stack](#services-from-original-iiwastack)
+    - [Configure Control Mode](#configure-control-mode)
+    - [Set Endpoint Frame](#set-endpoint-frame)
 
 
 ## MoveIt! - RViz Support Services
@@ -131,6 +134,39 @@
 
   1. In RVIZ, click "`Add`" button -> in the "`By topic`" tab -> select  
   `/[robot name]/state/EndEffectorWrench`
+
+
+
+
+## Services from Original iiwa_stack
+
+### Configure Control Mode
+- **Service**: `ConfigureControlMode`  
+1. In a terminal, call service: `/[robot name]/configuration/ConfigureControlMode`   
+1. Select control mode using number 0 ~ 4:
+    - control_mode = 0: Position Control Mode
+    - control_mode = 1: Joint Impedance Control Mode (use joint_impedance)
+    - control_mode = 2: Cartesian Impedance Control Mode (use cartesian_impedance and limits)
+    - control_mode = 3: Cartesian Sine Impedance Control Mode (use desired_force and limits)
+    - control_mode = 4: Cartesian Sine Impedance Control Mode (use sine_pattern and limits)
+
+### Set Endpoint Frame
+- **Service**: `setEndpointFrame`  
+- **Note**: 
+    - The topic `/[robot name]/state/CartesianPose` is always showing the end effector's position
+    - After changing the endpoint frame, when moving to a cartesian position, the manipulator will move the frame just set to the goal position
+#### Sunrise Workbench Setting
+1. Add a tool (refer to Kuka mannual), suppose the tool name is `[your tool name]`
+1. In your **Sunrise Project**, open the file `src/RoboticsAPI.data.xml` and add a line inside `<processDataContainer>`: 
+    ```xml
+      <processData dataType="java.lang.String" defaultValue="" displayName="Tool" editableOnHmi="true" id="toolName" value="[your tool name]"/>
+    ```
+1. Synchronize the project
+
+
+#### ROS Side
+1. In a terminal, call service: `/[robot name]/configuration/setEndpointFrame`  
+1. Set `frame_id` to the desired frame which belongs to this tool 
 
 
 

@@ -13,7 +13,7 @@ You need to get the IP address of:
 
 
 ## Reference
-This guide is based on [iiwa's wiki](https://github.com/IFL-CAMP/iiwa_stack/wiki), with some part adapted to CAM's environment
+This guide is based on [iiwa's wiki](https://github.com/IFL-CAMP/iiwa_stack/wiki), with some part adapted to RROS Lab's environment
 
 ## Setup  
 
@@ -69,7 +69,7 @@ try:  ([Ref](https://github.com/ysl208/iRoPro/issues/59))
 `source devel/setup.bash`    
 
 <span id="sunrise_side"></span>
-### Sunrise Project Side
+### Sunrise Workbench Side
 
 1. **Basic Sunrise Project Setup** :  
   - Within **Sunrise Workbench**, create a **Sunrise project** or load an existing one from the controller (default IP: 172.31.1.147).

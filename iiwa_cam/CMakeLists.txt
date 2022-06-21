@@ -197,9 +197,9 @@ add_executable(unit_test
 )
 
 # get frame files
-add_executable(tester 
-  src/tester.cpp
-)
+# add_executable(tester 
+#   src/tester.cpp
+# )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -314,9 +314,9 @@ target_link_libraries(unit_test
 )
 
 # get frame files
-target_link_libraries(tester
-  ${catkin_LIBRARIES}
-)
+# target_link_libraries(tester
+#   ${catkin_LIBRARIES}
+# )
 
 
 #############

@@ -216,7 +216,8 @@ Move robot along a trajectory in cartesian space, use set_cart_traj_vel_acc() be
 ### exe_joint_traj
 ```cpp
 void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                    const double velocity = 0.1)
+                    const double velocity = 0.1, const double stiffX = 2000,
+                    const double stiffY = 2000, const double stiffZ = 2000)
 ```
 
 Move robot along a trajectory in joint space
