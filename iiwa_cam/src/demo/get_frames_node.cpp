@@ -11,10 +11,22 @@
  */
 #include <iiwa.hpp>
 
+cam::Kuka kuka;
+
+// ref: http://wiki.ros.org/roscpp/Overview/Initialization%20and%20Shutdown
+void sigint_handler(int sig) {
+  // Do some custom action.
+  // For example, publish a stop message to some other nodes.
+  kuka.end_effector_state().end_recording();
+
+  // All the default sigint handler does is call shutdown()
+  ros::shutdown();
+}
+
 int main(int argc, char* argv[]) {
   ros::init(argc, argv, "get_frames_node");
 
-  cam::Kuka kuka;
+  signal(SIGINT, sigint_handler);
 
   // get recorded frames from pendant
   auto world_frame = kuka.get_recorded_frames();
@@ -36,14 +48,11 @@ int main(int argc, char* argv[]) {
 
   kuka.move_cart_ptp(p1_p2);
 
-  cam::press_to_go();
   std::cout
-      << "Waiting for motion completed ... \nPress Enter to stop recording"
+      << "Waiting for motion completed ... \nPress Ctrl+C to stop recording"
       << std::endl;
-  kuka.end_effector_state().end_recording();
 
   ros::spin();
 
-  ros::shutdown();
   return 0;
 }

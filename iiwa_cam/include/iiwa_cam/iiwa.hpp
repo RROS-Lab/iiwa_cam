@@ -30,13 +30,13 @@
 
 // C++ STL
 #include <atomic>
+#include <csignal>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
-
 namespace cam {
 constexpr int UNDEFINED_STATUS = -1;
 }  // namespace cam
@@ -107,6 +107,8 @@ class Kuka;
 class Kuka {
  public:
   class EndEffectorState {
+    friend class Kuka;
+
    private:
     ros::ServiceClient ee_recorder_client;
     ros::ServiceClient ee_state_client;
@@ -144,6 +146,11 @@ class Kuka {
           "/cam/iiwa/EndEffectorState");
     }
 
+    ~EndEffectorState() {
+      if (watchdog_state)
+        end_recording();
+    }
+
     std::pair<geometry_msgs::Pose, int> get_cart_pose() {
       iiwa_cam::EndEffectorState msg;
       msg.request.robot_name = name;
@@ -164,7 +171,7 @@ class Kuka {
 
       // start client watchdog
       if (watch_dog) {
-        watchdog_state = watch_dog;
+        watchdog_state = true;
         std::thread(std::bind(&EndEffectorState::watchdog, this)).detach();
       }
     }

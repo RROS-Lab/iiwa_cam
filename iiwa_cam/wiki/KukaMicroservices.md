@@ -79,9 +79,9 @@
 
 ### End Effector Path Recording
 
-  **Watchdog Machanism**:  
+  **Watchdog Machanism** （Daemon）:  
   - [Wikipedia: Watchdog timer](https://en.wikipedia.org/wiki/Watchdog_timer)
-  - The watchdog machanisim is introduced to this server, which allows the server stop recording when a client crashes. Once the client setup a watchdog, it should feed the dog with a frequency higher than **0.2** Hz （recommend 4 seconds between two feeds)
+  - The watchdog machanism is introduced to this server, which allows the server stop recording when a client crashes. Once the client setup a watchdog, it should feed the dog with a frequency higher than **0.2** Hz （recommend 4 seconds between two feeds)
 
   **Note**: The data is saved in your terminal's current working directory  
   - cartesian path: `[robot name]_cart_path.csv`  
