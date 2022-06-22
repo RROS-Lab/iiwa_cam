@@ -161,7 +161,17 @@ class Kuka {
     };
 
     void start_recording(bool watch_dog = true) {
-      iiwa_cam::PathRecorder msg;
+      static int try_time = 3;
+      while (--try_time >= 0) {
+        if (ee_recorder_client.exists())
+          break;
+        std::cout << "Failed to connect to the end_effector_state_service\n"
+                  << "Did you run \"rosrun iiwa_cam end_effector_state_service "
+                     "[robot1 name] [robot2 name] ...\"?\n"
+                  << std::endl;
+      }
+
+      static iiwa_cam::PathRecorder msg;
       msg.request.record = true;
       msg.request.robot_name = name;
       msg.request.watchdog = watch_dog;

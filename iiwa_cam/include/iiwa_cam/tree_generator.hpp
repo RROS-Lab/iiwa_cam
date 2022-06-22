@@ -75,7 +75,7 @@ class KukaTreeNode {
         return *it;
       }
     }
-    std::cout << childname << " is not a child of " << name << std::endl;
+    std::cout << childname << " is not a child of " << ((name=="r")?"the world frame":name) << std::endl;
     return nullptr;
   }
 
