@@ -26,16 +26,24 @@ int main(int argc, char* argv[]) {
   // get all children frames of P1, stored in a vector
   auto p1_children = p1->get_children();
 
-  // kuka.move_joint_ptp(p1);
+  kuka.end_effector_state().start_recording();
+  kuka.move_joint_ptp(p1);
 
   std::cout << "moving to /P1/P2: " << std::endl
             << p1_p2->frame->get_cartesian_pos().first << std::endl
             << "status: " << p1_p2->frame->get_cartesian_pos().second
             << std::endl;
 
-  // kuka.move_cart_ptp(p1_p2);
+  kuka.move_cart_ptp(p1_p2);
+
+  cam::press_to_go();
+  std::cout
+      << "Waiting for motion completed ... \nPress Enter to stop recording"
+      << std::endl;
+  kuka.end_effector_state().end_recording();
 
   ros::spin();
+
   ros::shutdown();
   return 0;
 }
