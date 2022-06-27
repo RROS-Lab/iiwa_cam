@@ -27,6 +27,7 @@ The Kuka class impelements common functions for controlling the KUKA manipulator
 ## Microservice List
 - [MoveIt! - RViz Support Services](./wiki/KukaMicroservices.md#moveit---rviz-support-services)
 - [End Effector State Services ](./wiki/KukaMicroservices.md#end-effector-state-services)
+- [Special Services of iiwa_stack_cam](./wiki/KukaMicroservices.md#special-services-of-iiwastackcam)
 - [Services from Original iiwa_stack](./wiki/KukaMicroservices.md#services-from-original-iiwastack)
 
 

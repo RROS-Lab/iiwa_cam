@@ -8,6 +8,11 @@
     - [Current Cartesian Position](#end-effector-current-cartesian-position-inquiry)
     - [Path Recording](#end-effector-path-recording)
     - [Wrench Visulization](#end-effector-wrench-visulization)
+
+- [Special Services of iiwa_stack_cam](#special-services-of-iiwastackcam)
+    - [Software Level Emergency Stop](#software-level-emergency-stop)
+    - [Get Frames from Pendant](#get-frames-from-pendant)
+
 - [Services from Original iiwa_stack](#services-from-original-iiwastack)
     - [Configure Control Mode](#configure-control-mode)
     - [Set Endpoint Frame](#set-endpoint-frame)
@@ -136,6 +141,18 @@
   `/[robot name]/state/EndEffectorWrench`
 
 
+
+## Special Services of iiwa_stack_cam
+Based on original iiwa_stack, we developed several special features for Kuka
+
+### Software Level Emergency Stop
+1. In a terminal, call service: `/[robot name]/EmergencyStop` and the `ROSSmartServo` application on the pendant will pause
+1. After the application paused, you can either resume the application(the robot will resume the previous motion) or exit it 
+
+
+
+### Get Frames from Pendant
+1. In a terminal, call service: `/[robot name]/configuration/GetFrames`
 
 
 ## Services from Original iiwa_stack

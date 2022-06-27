@@ -53,14 +53,12 @@ void joint_state_callback(const iiwa_msgs::JointPosition &msg) {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "moveit_rviz_state_receiver_service");
-
-  // ros::AsyncSpinner spinner(1);
-  // spinner.start();
+  std::string name = (argc >= 2) ? argv[1] : "iiwa";
 
   ros::NodeHandle nh;
 
   ros::Subscriber moveit_sub =
-      nh.subscribe("/iiwa/state/JointPosition", 100, joint_state_callback);
+      nh.subscribe("/"+name+"/state/JointPosition", 100, joint_state_callback);
 
   joint_state_pub = nh.advertise<sensor_msgs::JointState>("/joint_states", 100);
 
