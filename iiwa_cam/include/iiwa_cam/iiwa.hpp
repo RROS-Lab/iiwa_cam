@@ -385,7 +385,7 @@ class Kuka {
           std::vector<double>{jq.a1, jq.a2, jq.a3, jq.a4, jq.a5, jq.a6, jq.a7});
 
       new_frame->set_cart_pos(std::make_pair(
-          cart_world_positions[i], stoi(frame_msg.response.status[i])));
+          cart_world_positions[i], std::stoi(frame_msg.response.status[i])));
       frames.emplace_back(new_frame);
     }
 
