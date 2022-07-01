@@ -841,11 +841,14 @@ class Kuka {
    *
    * @param trajectory
    * @param velocity joint relative speed, default = 0.1
-   * @param stidd stiffness on X, Y, Z, default = 2000
+   * @param stiff stiffness on X, Y, Z, default = 2000
+   * @param damp damping on X, Y, Z, default = 0.7
    */
   void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
                       const double velocity = 0.1, const double stiffX = 2000,
-                      const double stiffY = 2000, const double stiffZ = 2000) {
+                      const double stiffY = 2000, const double stiffZ = 2000,
+                      const double dampX = 0.7, const double dampY = 0.7,
+                      const double dampZ = 0.7) {
     iiwa_msgs::Spline spline_msg;
     const auto &traj_vec = trajectory.joint_trajectory.points;
 
@@ -878,6 +881,10 @@ class Kuka {
     spline_msg.segments.at(0).point_aux.poseStamped.pose.position.x = stiffX;
     spline_msg.segments.at(0).point_aux.poseStamped.pose.position.y = stiffY;
     spline_msg.segments.at(0).point_aux.poseStamped.pose.position.z = stiffZ;
+
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.x = dampX;
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.y = dampY;
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.z = dampZ;
 
     move_joint_ptp(traj_vec.begin()->positions);
 
