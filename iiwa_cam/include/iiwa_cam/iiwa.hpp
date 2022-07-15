@@ -909,7 +909,7 @@ class Kuka {
   }
 
   /**
-   * @brief Move robot along a trajectory in joint space
+   * @brief Move robot along a trajectory in joint space, using joint impedance control mode
    *
    * @param trajectory
    * @param velocity joint relative speed, default = 0.1
@@ -917,8 +917,7 @@ class Kuka {
    * @param damp damping on 7 joints
    */
   void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                      const double velocity,
-                      const std::vector<double> &stiff,
+                      const double velocity, const std::vector<double> &stiff,
                       const std::vector<double> &damp) {
     iiwa_msgs::Spline spline_msg;
     const auto &traj_vec = trajectory.joint_trajectory.points;

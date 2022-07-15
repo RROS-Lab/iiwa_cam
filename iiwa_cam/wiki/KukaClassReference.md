@@ -243,6 +243,12 @@ Move robot along a trajectory in cartesian space, use set_cart_traj_vel_acc() be
 
 ### exe_joint_traj
 ```cpp
+// using joint impedance control mode
+void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
+                    const double velocity, const std::vector<double> &stiff,
+                    const std::vector<double> &damp)
+
+// using cartesian impedance control mode
 void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
                     const double velocity = 0.1, const double stiffX = 2000,
                     const double stiffY = 2000, const double stiffZ = 2000,
@@ -250,11 +256,12 @@ void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
                     const double dampZ = 0.7)
 ```
 
-Move robot along a trajectory in joint space
+Move robot along a trajectory in joint space, using joint/cartesian impedance control mode
 
 - `velocity`: joint space velocity
 - `stiffX, stiffY, stiffZ`: stiffness on X, Y, and Z, (0.1 ~ 5000)
 - `dampX, dampY, dampZ`: damping on X, Y, and Z, (0.1 ~ 1.0)
+- `stiff, damp`: stiffness and damping on 7 joints (when using joint impedance control mode)
 
 **Demo File:** [moveit_rviz_exec_service.cpp](../src/utilities/moveit_rviz_exec_service.cpp)
 
