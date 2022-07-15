@@ -878,6 +878,9 @@ class Kuka {
     spline_msg.segments.at(0).point.poseStamped.header.frame_id =
         std::to_string(velocity);
 
+    // 0: cartesian impedence  1: joint impedence
+    spline_msg.segments.at(0).point_aux.redundancy.status = 0;
+
     spline_msg.segments.at(0).point_aux.poseStamped.pose.position.x = stiffX;
     spline_msg.segments.at(0).point_aux.poseStamped.pose.position.y = stiffY;
     spline_msg.segments.at(0).point_aux.poseStamped.pose.position.z = stiffZ;
@@ -885,6 +888,95 @@ class Kuka {
     spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.x = dampX;
     spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.y = dampY;
     spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.z = dampZ;
+
+    move_joint_ptp(traj_vec.begin()->positions);
+
+    joint_spline_pub.publish(spline_msg);
+  }
+
+  /**
+   * @brief Move robot along a trajectory in joint space
+   *
+   * @param trajectory
+   * @param velocity joint relative speed, default = 0.1
+   * @param stiff stiffness on 7 joints
+   * @param damp damping on 7 joints
+   */
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
+                      const double velocity, std::vector<double> &&stiff,
+                      std::vector<double> &&damp) {
+    exe_joint_traj(trajectory, velocity, stiff, damp);
+  }
+
+  /**
+   * @brief Move robot along a trajectory in joint space
+   *
+   * @param trajectory
+   * @param velocity joint relative speed, default = 0.1
+   * @param stiff stiffness on 7 joints
+   * @param damp damping on 7 joints
+   */
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
+                      const double velocity,
+                      const std::vector<double> &stiff,
+                      const std::vector<double> &damp) {
+    iiwa_msgs::Spline spline_msg;
+    const auto &traj_vec = trajectory.joint_trajectory.points;
+
+    unsigned traj_size = traj_vec.size();
+
+    ROS_INFO("spline traj size:  %u", traj_size);
+
+    spline_msg.segments.reserve(traj_size);
+
+    auto traj_vec_iter = traj_vec.begin();
+    auto traj_vec_end_iter = traj_vec.end();
+    while (traj_vec_iter != traj_vec_end_iter) {
+      iiwa_msgs::SplineSegment seg;
+
+      seg.point.poseStamped.pose.position.x = traj_vec_iter->positions.at(0);
+      seg.point.poseStamped.pose.position.y = traj_vec_iter->positions.at(1);
+      seg.point.poseStamped.pose.position.z = traj_vec_iter->positions.at(2);
+      seg.point.poseStamped.pose.orientation.w = traj_vec_iter->positions.at(3);
+      seg.point.poseStamped.pose.orientation.x = traj_vec_iter->positions.at(4);
+      seg.point.poseStamped.pose.orientation.y = traj_vec_iter->positions.at(5);
+      seg.point.poseStamped.pose.orientation.z = traj_vec_iter->positions.at(6);
+
+      spline_msg.segments.emplace_back(seg);
+      traj_vec_iter++;
+    }
+
+    spline_msg.segments.at(0).point.poseStamped.header.frame_id =
+        std::to_string(velocity);
+
+    // 0: cartesian impedence  1: joint impedence
+    spline_msg.segments.at(0).point_aux.redundancy.status = 1;
+
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.x = stiff[0];
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.y = stiff[1];
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.z = stiff[2];
+
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.w =
+        stiff[3];
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.x =
+        stiff[4];
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.y =
+        stiff[5];
+    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.z =
+        stiff[6];
+
+    spline_msg.segments.at(1).point_aux.poseStamped.pose.position.x = damp[0];
+    spline_msg.segments.at(1).point_aux.poseStamped.pose.position.y = damp[1];
+    spline_msg.segments.at(1).point_aux.poseStamped.pose.position.z = damp[2];
+
+    spline_msg.segments.at(1).point_aux.poseStamped.pose.orientation.w =
+        damp[3];
+    spline_msg.segments.at(1).point_aux.poseStamped.pose.orientation.x =
+        damp[4];
+    spline_msg.segments.at(1).point_aux.poseStamped.pose.orientation.y =
+        damp[5];
+    spline_msg.segments.at(1).point_aux.poseStamped.pose.orientation.z =
+        damp[6];
 
     move_joint_ptp(traj_vec.begin()->positions);
 
