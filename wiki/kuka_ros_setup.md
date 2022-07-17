@@ -27,7 +27,7 @@ This guide is based on [iiwa's wiki](https://github.com/IFL-CAMP/iiwa_stack/wiki
 <span id="ros_side"></span>
 ### ROS Machine side
 
-1. **Install ROS MELODIC or KINETIC** (if not already there) as described at [here](http://wiki.ros.org/melodic/Installation/Ubuntu).   
+1. **Install ROS NOETIC** (if not already there) as described at [here](http://wiki.ros.org/melodic/Installation/Ubuntu).   
    It's also a good idea to install the python catkin tools     
    `sudo apt-get install python-catkin-tools`
 
