@@ -16,14 +16,14 @@ int main(int argc, char* argv[]) {
   cout << "press Enter to start ..." << endl;
   getchar();
   // move to start position using ptp
-  kuka.move_cart_ptp(-0.42, 0, 0.2, 0, 0, 1, 0);
+  kuka.move_cart_ptp(-0.42, 0, 0.35, 0, 0, 1, 0);
 
   cam::press_to_go();
-  kuka.move_cart_lin(-0.42, 0, 0.1, 0, 0, 1, 0);
-  kuka.move_cart_lin(-0.42, 0.2, 0.2, 0, 0, 1, 0);
+  kuka.move_cart_lin(-0.42, 0, 0.3, 0, 0, 1, 0);
+  kuka.move_cart_lin(-0.42, 0.2, 0.4, 0, 0, 1, 0);
 
   // move to start position using lin
-  kuka.move_cart_lin(-0.42, 0, 0.2, 0, 0, 1, 0);
+  kuka.move_cart_lin(-0.42, 0, 0.35, 0, 0, 1, 0);
   
 
   ros::shutdown();

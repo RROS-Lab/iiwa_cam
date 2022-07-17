@@ -1,6 +1,7 @@
 
 // iiwa_cam pkg defined srvs
 #include <iiwa_cam/EndEffectorState.h>
+#include <iiwa_cam/EndEffectorWrench.h>
 #include <iiwa_cam/PathRecorder.h>
 
 // iiwa_stack_cam defined msgs srvs acts
@@ -17,6 +18,7 @@
 #include <atomic>
 #include <csv2.hpp>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <unordered_map>
 
@@ -119,11 +121,13 @@ class KukaWatchDog {
  */
 class KukaRecorder {
   friend KukaWatchDog;
+  const int WRENCH_HIS_QUEUE_SIZE = 30;
 
  public:
   bool recorder_state = false;  // protected by mtx
 
-  std::mutex *mtx;  // mutex for recorder_state, 2 queue
+  std::mutex *mtx;         // mutex for recorder_state, 2 queue
+  std::mutex *wrench_mtx;  // mutex for wrench_history
 
   KukaWatchDog *dog;
 
@@ -144,6 +148,9 @@ class KukaRecorder {
   geometry_msgs::Pose cart_pose;  // protected by mtx
   int status;                     // protected by mtx
 
+  // protected by wrench_mtx, max size = WRENCH_HIS_QUEUE_SIZE
+  std::deque<geometry_msgs::Wrench> wrench_history;
+
   /**
    * @brief Callback function for a new CartesianWrench message from Kuka
    *
@@ -158,6 +165,17 @@ class KukaRecorder {
       wrench_msg.header.frame_id = "iiwa_link_7";
 
       wrench_pub.publish(wrench_msg);
+
+      std::lock_guard<std::mutex> lock(*wrench_mtx);
+
+      wrench_history.emplace_back(msg.wrench);
+      // auto end_pos = wrench_history.begin() + wrench_history.size() -
+      //                WRENCH_HIS_QUEUE_SIZE;
+      // if (end_pos != wrench_history.begin())
+      //   wrench_history.erase(wrench_history.begin(), end_pos);
+
+      while (wrench_history.size() > WRENCH_HIS_QUEUE_SIZE)
+        wrench_history.pop_front();
     }
 
     // as the kuka robot publishes topic at a period of 1 ms (line 340 in
@@ -220,6 +238,7 @@ class KukaRecorder {
       : cart_pos_stream(name + "_cart_path.csv"),
         wrench_stream(name + "_wrench.csv") {
     mtx = new std::mutex();
+    wrench_mtx = new std::mutex();
 
     cart_pos_queue.reserve(30);
     wrench_queue.reserve(50);
@@ -255,8 +274,9 @@ class KukaRecorder {
     if (wrench_stream.is_open())
       wrench_stream.close();
     if (dog)
-      delete (dog);
+      delete dog;
     delete mtx;
+    delete wrench_mtx;
   }
 
   /**
@@ -268,6 +288,22 @@ class KukaRecorder {
   void fill_response(iiwa_cam::EndEffectorState::Response &res) {
     res.pose = cart_pose;
     res.status = status;
+  }
+
+  /**
+   * @brief fill out the response data in EndEffectorWrench
+   *
+   * @pre get the mutex
+   *
+   */
+  void fill_response(iiwa_cam::EndEffectorWrench::Response &res) {
+    res.pose = cart_pose;
+    res.status = status;
+
+    res.wrenches.resize(30);
+    std::lock_guard<std::mutex> lock(*wrench_mtx);
+    std::copy(wrench_history.begin(), wrench_history.end(),
+              res.wrenches.begin());
   }
 
   const std::string &get_name() const { return robot_name; }
@@ -427,13 +463,39 @@ bool pr_callback(iiwa_cam::PathRecorder::Request &req,
 
 /**
  * @brief Callback function for end effector current cartesian position inquiry
- * 
- * @param req 
- * @param res 
+ *
+ * @param req
+ * @param res
  * @return true once the reqest is served
  */
-bool ee_callback(iiwa_cam::EndEffectorState::Request &req,
-                 iiwa_cam::EndEffectorState::Response &res) {
+bool ee_pos_callback(iiwa_cam::EndEffectorState::Request &req,
+                     iiwa_cam::EndEffectorState::Response &res) {
+  auto pr_iter = pr_map.find(req.robot_name);
+  if (pr_iter == pr_map.end()) {
+    res.error = "No robot named " + req.robot_name + " is being listening to";
+    res.success = false;
+    return true;
+  }
+  auto &pr = pr_iter->second;
+
+  std::lock_guard<std::mutex> lock(*(pr->mtx));
+
+  pr->fill_response(res);
+
+  res.success = true;
+
+  return true;
+}
+
+/**
+ * @brief Callback function for end effector current wrench inquiry
+ *
+ * @param req
+ * @param res
+ * @return true once the reqest is served
+ */
+bool ee_wrench_callback(iiwa_cam::EndEffectorWrench::Request &req,
+                        iiwa_cam::EndEffectorWrench::Response &res) {
   auto pr_iter = pr_map.find(req.robot_name);
   if (pr_iter == pr_map.end()) {
     res.error = "No robot named " + req.robot_name + " is being listening to";
@@ -467,8 +529,11 @@ int main(int argc, char *argv[]) {
   ros::ServiceServer pr_service =
       nh.advertiseService("/cam/iiwa/PathRecorder", pr_callback);
 
-  ros::ServiceServer ee_service =
-      nh.advertiseService("/cam/iiwa/EndEffectorState", ee_callback);
+  ros::ServiceServer ee_pos_service =
+      nh.advertiseService("/cam/iiwa/EndEffectorState", ee_pos_callback);
+
+  ros::ServiceServer ee_wrench_service =
+      nh.advertiseService("/cam/iiwa/EndEffectorWrench", ee_wrench_callback);
 
   ros::spin();
 
