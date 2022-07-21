@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   arm.setMaxAccelerationScalingFactor(0.8);
   arm.setMaxVelocityScalingFactor(0.8);
 
-  kuka.move_cart_ptp(-0.52, 0, 0.15, 0, 0, 1, 0);
+  // kuka.move_cart_ptp(-0.52, 0, 0.15, 0, 0, 1, 0);
   geometry_msgs::Pose target_pose;
   target_pose.orientation.x = 0;
   target_pose.orientation.y = 1;
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
     else
       ROS_INFO("Path computed successfully. Moving the arm.");
 
-    kuka.exe_joint_traj(trajectory);
+    // kuka.exe_joint_traj(trajectory);
   }
 
   ros::shutdown();

@@ -178,6 +178,15 @@ add_executable(moveit_plan_and_exec_node
   src/demo/moveit_plan_and_exec_node.cpp
 )
 
+add_executable(peg_in_hole_explore_node 
+  src/demo/peg_in_hole_explore_node.cpp
+)
+
+add_executable(peg_in_hole_imp_node 
+  src/demo/peg_in_hole_imp_node.cpp
+)
+
+
 # utility files
 add_executable(end_effector_state_service
   src/utilities/end_effector_state_service.cpp
@@ -243,6 +252,13 @@ add_dependencies(moveit_plan_and_exec_node
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
+add_dependencies(peg_in_hole_explore_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+add_dependencies(peg_in_hole_imp_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
 add_dependencies(end_effector_state_service
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
@@ -294,6 +310,13 @@ target_link_libraries(moveit_plan_and_exec_node
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(peg_in_hole_explore_node
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(peg_in_hole_imp_node
+  ${catkin_LIBRARIES}
+)
+
 # utility files
 target_link_libraries(end_effector_state_service
   ${catkin_LIBRARIES}
@@ -328,10 +351,11 @@ target_link_libraries(unit_test
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# catkin_install_python(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+
+catkin_install_python(PROGRAMS
+  pyScript/peg_in_hole_demo.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html

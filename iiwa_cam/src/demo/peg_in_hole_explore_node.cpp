@@ -6,6 +6,7 @@ int main(int argc, char* argv[]) {
 
   ros::init(argc, argv, "peg_in_hole_explore_node");
   ros::NodeHandle nh;
+  cout<<"Initializing Kuka Object\n";
   cam::Kuka kuka;
 
   const double HEIGHT = 0.06500; // unit: m
