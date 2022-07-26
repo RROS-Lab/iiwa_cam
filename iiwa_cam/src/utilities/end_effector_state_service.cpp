@@ -147,6 +147,7 @@ class KukaRecorder {
 
   geometry_msgs::Pose cart_pose;  // protected by mtx
   int status;                     // protected by mtx
+  ros::Time timestamp;
 
   // protected by wrench_mtx, max size = WRENCH_HIS_QUEUE_SIZE
   std::deque<geometry_msgs::Wrench> wrench_history;
@@ -220,6 +221,7 @@ class KukaRecorder {
 
       cart_pose = msg.poseStamped.pose;
       status = msg.redundancy.status;
+      timestamp = msg.poseStamped.header.stamp;
 
       if (!recorder_state)
         return;
@@ -299,6 +301,7 @@ class KukaRecorder {
   void fill_response(iiwa_cam::EndEffectorWrench::Response &res) {
     res.pose = cart_pose;
     res.status = status;
+    res.stamp = timestamp;
 
     res.wrenches.resize(30);
     std::lock_guard<std::mutex> lock(*wrench_mtx);
