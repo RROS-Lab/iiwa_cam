@@ -170,18 +170,23 @@ Based on original iiwa_stack, we developed several special features for Kuka
 ### Set Endpoint Frame
 - **Service**: `setEndpointFrame`  
 - **Note**: 
-    - The topic `/[robot name]/state/CartesianPose` is always showing the end effector's position
-    - After changing the endpoint frame, when moving to a cartesian position, the manipulator will move the frame just set to the goal position
+    - After changing the endpoint frame, the topic `/[robot name]/state/CartesianPose` will show the new frame's cartesian position
+    - After changing the endpoint frame, when moving to a cartesian position, the manipulator will move the frame of the tool to the goal position
 #### Sunrise Workbench Setting
 1. Add a tool (refer to Kuka mannual), suppose the tool name is `[your tool name]`
-1. In your **Sunrise Project**, open the file `src/RoboticsAPI.data.xml` and add a line inside `<processDataContainer>`: 
-    ```xml
-      <processData dataType="java.lang.String" defaultValue="" displayName="Tool" editableOnHmi="true" id="toolName" value="[your tool name]"/>
-    ```
+1. Add a base frame `[your tool name]_link_ee`   
+    (this will be the initial frame the manipulator uses for cartesian pose)
+1. Add other frame on your tool
 1. Synchronize the project
 
 
 #### ROS Side
+1. In a terminal, add a parameter: `rosparam set iiwa/toolName [your tool name]`  
+    or using lauch file:
+    ```xml
+    <arg name="tool_name" default="[your tool name]"/>
+    <param name="/iiwa/toolName" type="string" value="$(arg tool_name)" />
+    ```
 1. In a terminal, call service: `/[robot name]/configuration/setEndpointFrame`  
 1. Set `frame_id` to the desired frame which belongs to this tool 
 

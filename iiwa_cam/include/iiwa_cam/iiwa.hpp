@@ -248,7 +248,8 @@ class Kuka {
 
  private:
   iiwa_msgs::MoveToCartesianPoseAction build_cart_act(
-      const geometry_msgs::Pose &pose, int status = UNDEFINED_STATUS) {
+      const geometry_msgs::Pose &pose, int status = UNDEFINED_STATUS,
+      double e1 = 0.0) {
     // action msg difinition
     iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
 
@@ -264,6 +265,7 @@ class Kuka {
 
     cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status =
         status;
+    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.e1 = e1;
     // see pdf 391
 
     // set frame id (important!)
@@ -909,7 +911,8 @@ class Kuka {
   }
 
   /**
-   * @brief Move robot along a trajectory in joint space, using joint impedance control mode
+   * @brief Move robot along a trajectory in joint space, using joint impedance
+   * control mode
    *
    * @param trajectory
    * @param velocity joint relative speed, default = 0.1

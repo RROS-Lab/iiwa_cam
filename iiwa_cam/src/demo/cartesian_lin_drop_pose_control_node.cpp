@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
   kuka.set_vel_acc_drop(0.5);
 
   geometry_msgs::Pose pose;
-  pose.position.x = -0.42;
+  pose.position.x = 0.48;
   pose.position.y = 0;
   pose.position.z = 0.2;
   pose.orientation.w = 0;
