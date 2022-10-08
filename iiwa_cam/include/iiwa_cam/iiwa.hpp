@@ -14,6 +14,7 @@
 #include <iiwa_msgs/CartesianWrench.h>
 #include <iiwa_msgs/GetFrames.h>
 #include <iiwa_msgs/JointPosition.h>
+#include <iiwa_msgs/JointSpline.h>
 #include <iiwa_msgs/MoveAlongSplineAction.h>
 #include <iiwa_msgs/MoveToCartesianPoseAction.h>
 #include <iiwa_msgs/MoveToJointPositionAction.h>
@@ -38,7 +39,7 @@
 #include <thread>
 #include <vector>
 namespace cam {
-constexpr int UNDEFINED_STATUS = -1;
+  constexpr int UNDEFINED_STATUS = -1;
 }  // namespace cam
 
 namespace cam {
@@ -106,6 +107,13 @@ class Kuka;
 
 class Kuka {
  public:
+  
+  enum JOINT_SPLINE_MODE {
+    POSITION_CONTROL_MODE = 0,
+    JOINT_IMPEDANCE_MODE,
+    CARTESIAN_IMPEDANCE_MODE
+  };
+
   class EndEffectorState {
     friend class Kuka;
 
@@ -319,8 +327,8 @@ class Kuka {
         new actionlib::SimpleActionClient<iiwa_msgs::MoveAlongSplineAction>(
             iiwa_name + "/action/move_along_spline");
 
-    joint_spline_pub =
-        nh.advertise<iiwa_msgs::Spline>(iiwa_name + "/command/JointSpline", 1);
+    joint_spline_pub = nh.advertise<iiwa_msgs::JointSpline>(
+        iiwa_name + "/command/JointSpline", 1);
 
     joint_ptp_droppable_pub = nh.advertise<iiwa_msgs::JointPosition>(
         iiwa_name + "/command/JointPosition", 1);
@@ -333,6 +341,29 @@ class Kuka {
 
     set_vel_acc();
     set_cart_traj_vel_acc();
+  }
+
+  void fill_joint_spline_segements(
+      iiwa_msgs::JointSpline &spline_msg,
+      const std::vector<trajectory_msgs::JointTrajectoryPoint> &traj_vec) {
+    unsigned traj_size = traj_vec.size();
+
+    ROS_INFO("spline size:  %u", traj_size);
+
+    spline_msg.segments.reserve(traj_size);
+
+    auto traj_vec_iter = traj_vec.begin();
+    auto traj_vec_end_iter = traj_vec.end();
+    while (traj_vec_iter != traj_vec_end_iter) {
+      iiwa_msgs::JointSplineSegment seg;
+
+      seg.joint_angle.resize(traj_vec_iter->positions.size());
+      std::copy(traj_vec_iter->positions.begin(),
+                traj_vec_iter->positions.end(), seg.joint_angle.begin());
+
+      spline_msg.segments.emplace_back(seg);
+      traj_vec_iter++;
+    }
   }
 
  public:
@@ -839,7 +870,8 @@ class Kuka {
   }
 
   /**
-   * @brief Move robot along a trajectory in joint space
+   * @brief Move robot along a trajectory in joint space with cartesian
+   * impedance control
    *
    * @param trajectory
    * @param velocity joint relative speed, default = 0.1
@@ -847,67 +879,14 @@ class Kuka {
    * @param damp damping on X, Y, Z, default = 0.7
    */
   void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                      const double velocity = 0.1, const double stiffX = 2000,
-                      const double stiffY = 2000, const double stiffZ = 2000,
-                      const double dampX = 0.7, const double dampY = 0.7,
-                      const double dampZ = 0.7) {
-    iiwa_msgs::Spline spline_msg;
-    const auto &traj_vec = trajectory.joint_trajectory.points;
-
-    unsigned traj_size = traj_vec.size();
-
-    ROS_INFO("spline traj size:  %u", traj_size);
-
-    spline_msg.segments.reserve(traj_size);
-
-    auto traj_vec_iter = traj_vec.begin();
-    auto traj_vec_end_iter = traj_vec.end();
-    while (traj_vec_iter != traj_vec_end_iter) {
-      iiwa_msgs::SplineSegment seg;
-
-      seg.point.poseStamped.pose.position.x = traj_vec_iter->positions.at(0);
-      seg.point.poseStamped.pose.position.y = traj_vec_iter->positions.at(1);
-      seg.point.poseStamped.pose.position.z = traj_vec_iter->positions.at(2);
-      seg.point.poseStamped.pose.orientation.w = traj_vec_iter->positions.at(3);
-      seg.point.poseStamped.pose.orientation.x = traj_vec_iter->positions.at(4);
-      seg.point.poseStamped.pose.orientation.y = traj_vec_iter->positions.at(5);
-      seg.point.poseStamped.pose.orientation.z = traj_vec_iter->positions.at(6);
-
-      spline_msg.segments.emplace_back(seg);
-      traj_vec_iter++;
-    }
-
-    spline_msg.segments.at(0).point.poseStamped.header.frame_id =
-        std::to_string(velocity);
-
-    // 0: cartesian impedence  1: joint impedence
-    spline_msg.segments.at(0).point_aux.redundancy.status = 0;
-
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.x = stiffX;
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.y = stiffY;
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.z = stiffZ;
-
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.x = dampX;
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.y = dampY;
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.z = dampZ;
-
-    move_joint_ptp(traj_vec.begin()->positions);
-
-    joint_spline_pub.publish(spline_msg);
-  }
-
-  /**
-   * @brief Move robot along a trajectory in joint space
-   *
-   * @param trajectory
-   * @param velocity joint relative speed, default = 0.1
-   * @param stiff stiffness on 7 joints
-   * @param damp damping on 7 joints
-   */
-  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                      const double velocity, std::vector<double> &&stiff,
-                      std::vector<double> &&damp) {
-    exe_joint_traj(trajectory, velocity, stiff, damp);
+                      const float velocity = 0.1, const float stiffX = 2000,
+                      const float stiffY = 2000, const float stiffZ = 2000,
+                      const float dampX = 0.7, const float dampY = 0.7,
+                      const float dampZ = 0.7) {
+    std::vector<float> stiff{stiffX, stiffY, stiffZ};
+    std::vector<float> damp{dampX, dampY, dampZ};
+    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp,
+                   CARTESIAN_IMPEDANCE_MODE);
   }
 
   /**
@@ -915,72 +894,104 @@ class Kuka {
    * control mode
    *
    * @param trajectory
-   * @param velocity joint relative speed, default = 0.1
+   * @param velocity joint relative speed
    * @param stiff stiffness on 7 joints
    * @param damp damping on 7 joints
    */
   void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
                       const double velocity, const std::vector<double> &stiff,
                       const std::vector<double> &damp) {
-    iiwa_msgs::Spline spline_msg;
-    const auto &traj_vec = trajectory.joint_trajectory.points;
+    exe_joint_traj(trajectory.joint_trajectory.points, velocity,
+                   std::vector<float>(stiff.begin(), stiff.end()),
+                   std::vector<float>(damp.begin(), damp.end()),
+                   JOINT_IMPEDANCE_MODE);
+  }
 
-    unsigned traj_size = traj_vec.size();
+  /**
+   * @brief Move robot along a trajectory in joint space, using joint impedance
+   * control mode
+   *
+   * @param trajectory
+   * @param velocity joint relative speed
+   * @param stiff stiffness on 7 joints
+   * @param damp damping on 7 joints
+   */
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
+                      const float velocity, std::vector<float> &&stiff,
+                      std::vector<float> &&damp) {
+    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp,
+                   JOINT_IMPEDANCE_MODE);
+  }
 
-    ROS_INFO("spline traj size:  %u", traj_size);
+  /**
+   * @brief Move robot along a trajectory in joint space, using joint impedance
+   * control mode
+   *
+   * @param trajectory
+   * @param velocity joint relative speed
+   * @param stiff stiffness on 7 joints
+   * @param damp damping on 7 joints
+   */
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
+                      const float velocity, const std::vector<float> &stiff,
+                      const std::vector<float> &damp) {
+    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp,
+                   JOINT_IMPEDANCE_MODE);
+  }
 
-    spline_msg.segments.reserve(traj_size);
+  /**
+   * @brief Move robot along a trajectory in joint space
+   * 
+   * @param trajectory 
+   * @param velocity joint relative speed, default = 0.1
+   * @param stiff stiffness, size = 3 (cartesian impedance) or 7 (joint impedance) 
+   * @param damp damping, size = 3 (cartesian impedance) or 7 (joint impedance) 
+   * @param mode 2: cartesian impedence  1: joint impedence  0: position control
+   */
+  void exe_joint_traj(
+      const std::vector<trajectory_msgs::JointTrajectoryPoint> &trajectory,
+      const float velocity, const std::vector<float> &stiff,
+      const std::vector<float> &damp,
+      JOINT_SPLINE_MODE mode = JOINT_SPLINE_MODE::POSITION_CONTROL_MODE) {
+    iiwa_msgs::JointSpline spline_msg;
 
-    auto traj_vec_iter = traj_vec.begin();
-    auto traj_vec_end_iter = traj_vec.end();
-    while (traj_vec_iter != traj_vec_end_iter) {
-      iiwa_msgs::SplineSegment seg;
+    switch (mode) {
+      case JOINT_SPLINE_MODE::CARTESIAN_IMPEDANCE_MODE:
+        spline_msg.cartesian_stiffness.resize(3);
+        spline_msg.cartesian_damping.resize(3);
+        std::copy(stiff.begin(), stiff.begin() + 3,
+                  spline_msg.cartesian_stiffness.begin());
+        std::copy(damp.begin(), damp.begin() + 3,
+                  spline_msg.cartesian_damping.begin());
+        break;
 
-      seg.point.poseStamped.pose.position.x = traj_vec_iter->positions.at(0);
-      seg.point.poseStamped.pose.position.y = traj_vec_iter->positions.at(1);
-      seg.point.poseStamped.pose.position.z = traj_vec_iter->positions.at(2);
-      seg.point.poseStamped.pose.orientation.w = traj_vec_iter->positions.at(3);
-      seg.point.poseStamped.pose.orientation.x = traj_vec_iter->positions.at(4);
-      seg.point.poseStamped.pose.orientation.y = traj_vec_iter->positions.at(5);
-      seg.point.poseStamped.pose.orientation.z = traj_vec_iter->positions.at(6);
+      case JOINT_SPLINE_MODE::JOINT_IMPEDANCE_MODE:
+        spline_msg.joint_stiffness.resize(7);
+        spline_msg.joint_damping.resize(7);
+        std::copy(stiff.begin(), stiff.begin() + 7,
+                  spline_msg.joint_stiffness.begin());
+        std::copy(damp.begin(), damp.begin() + 7,
+                  spline_msg.joint_damping.begin());
+        break;
 
-      spline_msg.segments.emplace_back(seg);
-      traj_vec_iter++;
+      case JOINT_SPLINE_MODE::POSITION_CONTROL_MODE:
+
+        break;
+
+      default:
+        ROS_ERROR("Wrong joint spline control mode, requires 0 ~ 2, gets: %d",
+                  (int)mode);
+        ROS_ERROR("Joint spline aborted.");
+        return;
+        break;
     }
 
-    spline_msg.segments.at(0).point.poseStamped.header.frame_id =
-        std::to_string(velocity);
+    fill_joint_spline_segements(spline_msg, trajectory);
 
-    // 0: cartesian impedence  1: joint impedence
-    spline_msg.segments.at(0).point_aux.redundancy.status = 1;
+    spline_msg.speed = velocity;
+    spline_msg.mode = mode;
 
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.x = stiff[0];
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.y = stiff[1];
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.position.z = stiff[2];
-
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.w =
-        stiff[3];
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.x =
-        stiff[4];
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.y =
-        stiff[5];
-    spline_msg.segments.at(0).point_aux.poseStamped.pose.orientation.z =
-        stiff[6];
-
-    spline_msg.segments.at(1).point_aux.poseStamped.pose.position.x = damp[0];
-    spline_msg.segments.at(1).point_aux.poseStamped.pose.position.y = damp[1];
-    spline_msg.segments.at(1).point_aux.poseStamped.pose.position.z = damp[2];
-
-    spline_msg.segments.at(1).point_aux.poseStamped.pose.orientation.w =
-        damp[3];
-    spline_msg.segments.at(1).point_aux.poseStamped.pose.orientation.x =
-        damp[4];
-    spline_msg.segments.at(1).point_aux.poseStamped.pose.orientation.y =
-        damp[5];
-    spline_msg.segments.at(1).point_aux.poseStamped.pose.orientation.z =
-        damp[6];
-
-    move_joint_ptp(traj_vec.begin()->positions);
+    move_joint_ptp(trajectory.front().positions);
 
     joint_spline_pub.publish(spline_msg);
   }

@@ -8,8 +8,8 @@ static cam::Kuka *kuka;
 
 void moveit_callback(const moveit_msgs::ExecuteTrajectoryActionGoal &msg) {
   auto &traj = msg.goal.trajectory;
-  std::vector<double> stiff(7, 100);
-  std::vector<double> damp(7, 0.5);
+  std::vector<float> stiff(7, 100);
+  std::vector<float> damp(7, 0.5);
   kuka->exe_joint_traj(traj, 0.2, stiff, damp);
 }
 
