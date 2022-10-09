@@ -11,7 +11,7 @@
 
 There are two ways:
 
-1. Control real kuka using RViz: (based on [MoveIt! - RViz Support Services](./wiki/KukaMicroservices.md#moveit---rviz-support-services))  
+1. Control real kuka using RViz: (based on [MoveIt! - RViz Support Services](./KukaMicroservices.md#moveit---rviz-support-services))  
     in terminal, run:  
     `roslaunch iiwa_cam moveit_kuka.launch`  
     then you can trag the end effector, paln and execute.

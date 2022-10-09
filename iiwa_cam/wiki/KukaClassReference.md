@@ -245,15 +245,24 @@ Move robot along a trajectory in cartesian space, use set_cart_traj_vel_acc() be
 ```cpp
 // using joint impedance control mode
 void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                    const double velocity, const std::vector<double> &stiff,
-                    const std::vector<double> &damp)
+                    const float velocity, const std::vector<float> &stiff,
+                    const std::vector<float> &damp);
 
 // using cartesian impedance control mode
 void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                    const double velocity = 0.1, const double stiffX = 2000,
-                    const double stiffY = 2000, const double stiffZ = 2000,
-                    const double dampX = 0.7, const double dampY = 0.7,
-                    const double dampZ = 0.7)
+                    const float velocity = 0.1, const float stiffX = 2000,
+                    const float stiffY = 2000, const float stiffZ = 2000,
+                    const float dampX = 0.7, const float dampY = 0.7,
+                    const float dampZ = 0.7);
+
+// using user-assigned mode 
+// (POSITION_CONTROL_MODE, JOINT_IMPEDANCE_MODE, CARTESIAN_IMPEDANCE_MODE)
+void exe_joint_traj(
+      const std::vector<trajectory_msgs::JointTrajectoryPoint> &trajectory,
+      const float velocity, 
+      const std::vector<float> &stiff,
+      const std::vector<float> &damp,
+      JOINT_SPLINE_MODE mode = JOINT_SPLINE_MODE::POSITION_CONTROL_MODE);
 ```
 
 Move robot along a trajectory in joint space, using joint/cartesian impedance control mode
@@ -262,6 +271,7 @@ Move robot along a trajectory in joint space, using joint/cartesian impedance co
 - `stiffX, stiffY, stiffZ`: stiffness on X, Y, and Z, (0.1 ~ 5000)
 - `dampX, dampY, dampZ`: damping on X, Y, and Z, (0.1 ~ 1.0)
 - `stiff, damp`: stiffness and damping on 7 joints (when using joint impedance control mode)
+- `stiff, damp`: stiffness and damping (size is 3 or 7 when using user assigned mode)
 
 **Demo File:** [moveit_rviz_exec_service.cpp](../src/utilities/moveit_rviz_exec_service.cpp)
 
