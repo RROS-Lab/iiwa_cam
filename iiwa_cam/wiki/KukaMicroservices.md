@@ -164,6 +164,7 @@ Based on original iiwa_stack, we developed several special features for Kuka
     - control_mode = 0: Position Control Mode
     - control_mode = 1: Joint Impedance Control Mode (use joint_impedance)
     - control_mode = 2: Cartesian Impedance Control Mode (use cartesian_impedance and limits)
+      - recommended param:  _nullspace_stiffness: 100.0  nullspace_damping: 0.7_ 
     - control_mode = 3: Cartesian Sine Impedance Control Mode (use desired_force and limits)
     - control_mode = 4: Cartesian Sine Impedance Control Mode (use sine_pattern and limits)
 

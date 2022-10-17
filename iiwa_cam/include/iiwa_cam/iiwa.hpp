@@ -367,9 +367,9 @@ class Kuka {
   }
 
  public:
-  Kuka() : ee_state("iiwa") { rob_init("iiwa"); }
-
   Kuka(const std::string &rob_name) : ee_state(rob_name) { rob_init(rob_name); }
+
+  Kuka() : Kuka("iiwa") {}
 
   ~Kuka() {
     delete joint_pos_client;

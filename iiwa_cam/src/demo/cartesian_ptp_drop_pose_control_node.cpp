@@ -3,7 +3,9 @@
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "cartesian_ptp_drop_pose_control_node");
 
-  cam::Kuka kuka;
+  std::string name = (argc >= 2) ? argv[1] : "iiwa";
+
+  cam::Kuka kuka(name);
   kuka.set_vel_acc_drop(0.2);
 
   geometry_msgs::Pose pose;

@@ -8,7 +8,9 @@ int main(int argc, char* argv[]) {
   ros::init(argc, argv, "cartesian_ptp_pose_control_node");
   ros::NodeHandle nh;
 
-  cam::Kuka kuka;
+  std::string name = (argc >= 2) ? argv[1] : "iiwa";
+
+  cam::Kuka kuka(name);
 
   // program start
   // phase 1: set velocity and accelaration
