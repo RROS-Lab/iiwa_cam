@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
   // the robot name is "iiwa" (default value), should be same as
   // RoboticsAPI.data.xml on Sunrise Workspace (in Windows computer)
-  std::string name = (argc >= 2) ? argv[1] : "iiwa";
+  std::string name = "iiwa";
 
   cam::Kuka kuka(name);
 
