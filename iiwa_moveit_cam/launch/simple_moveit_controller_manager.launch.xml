@@ -3,6 +3,6 @@
   <param name="moveit_controller_manager" value="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
 
   <!-- Load controller list to the parameter server -->
-  <rosparam file="$(find iiwa_cam_moveit)/config/simple_moveit_controllers.yaml" />
-  <rosparam file="$(find iiwa_cam_moveit)/config/ros_controllers.yaml" />
+  <rosparam file="$(find iiwa_moveit_cam)/config/simple_moveit_controllers.yaml" />
+  <rosparam file="$(find iiwa_moveit_cam)/config/ros_controllers.yaml" />
 </launch>

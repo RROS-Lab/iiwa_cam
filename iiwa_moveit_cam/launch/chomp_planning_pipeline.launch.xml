@@ -19,5 +19,5 @@
   <!-- Add MoveGroup capabilities specific to this pipeline -->
   <!-- <param name="capabilities" value="" /> -->
 
-  <rosparam command="load" file="$(find iiwa_cam_moveit)/config/chomp_planning.yaml" />
+  <rosparam command="load" file="$(find iiwa_moveit_cam)/config/chomp_planning.yaml" />
 </launch>

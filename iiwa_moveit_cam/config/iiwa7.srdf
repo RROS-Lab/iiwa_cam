@@ -30,6 +30,15 @@
         <joint name="iiwa_joint_6" value="0"/>
         <joint name="iiwa_joint_7" value="0"/>
     </group_state>
+    <group_state name="ready" group="iiwa_arm">
+        <joint name="iiwa_joint_1" value="0"/>
+        <joint name="iiwa_joint_2" value="1"/>
+        <joint name="iiwa_joint_3" value="0"/>
+        <joint name="iiwa_joint_4" value="-1.5"/>
+        <joint name="iiwa_joint_5" value="0"/>
+        <joint name="iiwa_joint_6" value="0.5416"/>
+        <joint name="iiwa_joint_7" value="0"/>
+    </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="ee" parent_link="iiwa_link_ee" group="iiwa_arm"/>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->

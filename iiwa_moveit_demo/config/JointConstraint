@@ -1,0 +1,6 @@
+- type: joint
+  joint_name: iiwa_joint_1
+  bounds: [-0.1, 2]
+  weight: 1.0
+# - type: joint
+#   joint_name: iiwa_joint_2

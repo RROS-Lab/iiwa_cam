@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   moveit::planning_interface::MoveGroupInterface *arm_ptr = NULL;
 
   if (argc < 2) {
-    // you need to run demo.lauch from iiwa_cam_moveit pkg 
+    // you need to run demo.lauch from iiwa_moveit_cam pkg 
     // before running this program
     arm_ptr = new moveit::planning_interface::MoveGroupInterface("iiwa_arm");
   } else {

@@ -1,0 +1,4 @@
+<launch>
+  <arg name="tool_name" default="peg"/>
+  <param name="/iiwa/toolName" type="string" value="$(arg tool_name)" />
+</launch>

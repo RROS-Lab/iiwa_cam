@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(iiwa_cam)
-
-set(CMAKE_CXX_STANDARD 11)
+project(iiwa_moveit_demo)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -10,13 +8,13 @@ set(CMAKE_CXX_STANDARD 11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  iiwa_msgs
-  actionlib
-  actionlib_msgs
-  roscpp
-  std_msgs
-  moveit_ros_planning_interface
   moveit_msgs
+  moveit_ros_planning_interface
+  moveit_visual_tools
+  roscpp
+  rospy
+  rviz_visual_tools
+  iiwa_moveit_cam
 )
 
 ## System dependencies are found with CMake's conventions
@@ -60,9 +58,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  DIRECTORY srv
-)
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -72,11 +72,10 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   moveit_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -108,14 +107,9 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS 
-  include 
-  include/csv2 
-  include/iiwa_cam
-#  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS 
-  roscpp std_msgs iiwa_msgs actionlib_msgs actionlib 
-  moveit_ros_planning_interface moveit_msgs
+ INCLUDE_DIRS include
+#  LIBRARIES iiwa_moveit_demo
+ CATKIN_DEPENDS moveit_msgs moveit_ros_planning_interface moveit_visual_tools roscpp rospy rviz_visual_tools iiwa_moveit_cam
 #  DEPENDS system_lib
 )
 
@@ -126,18 +120,14 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  include/iiwa_cam
-  include/csv2
+# include
   ${catkin_INCLUDE_DIRS}
-  # ${iiwa_ros_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/iiwa_cam.cpp
+#   src/${PROJECT_NAME}/iiwa_moveit_demo.cpp
 # )
-
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -147,64 +137,14 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-
-
-# demo files
-add_executable(cartesian_lin_drop_pose_control_node 
-  src/demo/cartesian_lin_drop_pose_control_node.cpp
+# add_executable(${PROJECT_NAME}_node src/iiwa_moveit_demo_node.cpp)
+add_executable(moveit_demo_1_node 
+  src/moveit_demo_1_node.cpp
 )
 
-add_executable(cartesian_lin_pose_control_node 
-  src/demo/cartesian_lin_pose_control_node.cpp
+add_executable(deprecated_demo_1_node 
+  src/deprecated/deprecated_demo_1_node.cpp
 )
-
-add_executable(cartesian_ptp_drop_pose_control_node 
-  src/demo/cartesian_ptp_drop_pose_control_node.cpp
-)
-
-add_executable(cartesian_ptp_pose_control_node 
-  src/demo/cartesian_ptp_pose_control_node.cpp
-)
-
-add_executable(cartesian_spline_node 
-  src/demo/cartesian_spline_node.cpp
-)
-
-add_executable(get_frames_node 
-  src/demo/get_frames_node.cpp
-)
-
-add_executable(joint_pose_control_node 
-  src/demo/joint_pose_control_node.cpp
-)
-
-add_executable(moveit_plan_and_exec_node 
-  src/demo/moveit_plan_and_exec_node.cpp
-)
-
-# utility files
-add_executable(end_effector_state_service
-  src/utilities/end_effector_state_service.cpp
-)
-
-add_executable(moveit_rviz_exec_service
-  src/utilities/moveit_rviz_exec_service.cpp
-)
-
-add_executable(moveit_rviz_state_receiver_service
-  src/utilities/moveit_rviz_state_receiver_service.cpp
-)
-
-# unit test files
-add_executable(unit_test 
-  src/test/unit_test.cpp
-)
-
-# get frame files
-# add_executable(tester 
-#   src/tester.cpp
-# )
-
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -215,113 +155,18 @@ add_executable(unit_test
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(cartesian_lin_drop_pose_control_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(cartesian_lin_pose_control_node 
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(cartesian_ptp_drop_pose_control_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(cartesian_ptp_pose_control_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(cartesian_spline_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(get_frames_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(joint_pose_control_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(moveit_plan_and_exec_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(end_effector_state_service
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(moveit_rviz_exec_service
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(moveit_rviz_state_receiver_service
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
-add_dependencies(unit_test
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-)
-
 ## Specify libraries to link a library or executable target against
-
-# demo files
-target_link_libraries(cartesian_lin_drop_pose_control_node
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(cartesian_lin_pose_control_node
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(cartesian_ptp_drop_pose_control_node
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(cartesian_ptp_pose_control_node
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(cartesian_spline_node
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(get_frames_node
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(joint_pose_control_node
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(moveit_plan_and_exec_node
-  ${catkin_LIBRARIES}
-)
-# utility files
-target_link_libraries(end_effector_state_service
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(moveit_rviz_exec_service
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(moveit_rviz_state_receiver_service
-  ${catkin_LIBRARIES}
-)
-
-
-# unit test files
-target_link_libraries(unit_test
-  ${catkin_LIBRARIES}
-)
-
-# get frame files
-# target_link_libraries(tester
+# target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
 
+target_link_libraries(moveit_demo_1_node
+  ${catkin_LIBRARIES}
+)
 
+target_link_libraries(deprecated_demo_1_node
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############
@@ -369,7 +214,7 @@ target_link_libraries(unit_test
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_iiwa_test.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_iiwa_moveit_demo.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
