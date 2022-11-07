@@ -3,17 +3,20 @@
 ## Demonstrations
 
 ### Demo 1
-  Plan trajectories with collision objects.  
+  Plan trajectories with **collision objects**.  
   [source code](./src/moveit_demo_1_node.cpp)
 
   Run demo using:
   ```
   roslaunch iiwa_moveit_demo moveit_demo_1.launch 
   ```
+
+  then press the Next button in the RvizVisualToolGui
+
   ![demo_1](./asset/gif/demo_1.gif)
 
 ### Demo 2
-  Build upon _Demo 1_, and plan the trajectories with constraints ([Ref](https://ros-planning.github.io/moveit_tutorials/doc/planning_with_approximated_constraint_manifolds/planning_with_approximated_constraint_manifolds_tutorial.html))  
+  Build upon _Demo 1_, and **plan the trajectories with constraints** ([Ref](https://ros-planning.github.io/moveit_tutorials/doc/planning_with_approximated_constraint_manifolds/planning_with_approximated_constraint_manifolds_tutorial.html))  
   [source code](./src/moveit_demo_1_node.cpp)
 
   Run demo using:
@@ -24,17 +27,17 @@
 
 
 ## Demo 3
-  Build upon _Demo 2_, add end effector orientation constraints. call the following function in the [source code](./src/moveit_demo_1_node.cpp)  
+  Build upon _Demo 2_, add **end effector orientation constraints**. call the following function in the [source code](./src/moveit_demo_3_node.cpp)  
   ```cpp
   addPathConstraints(move_group_interface);
   ```
 
   Compile and then run demo using:
   ```
-  roslaunch iiwa_moveit_demo moveit_demo_2.launch 
+  roslaunch iiwa_moveit_demo moveit_demo_3.launch 
   ```
 
-  ![demo_2_path_constraint](./asset/gif/demo_2_path_constraint.gif)
+  ![demo_3](./asset/gif/demo_3.gif)
 
 ## Deprecated Method
 

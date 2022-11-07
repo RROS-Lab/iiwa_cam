@@ -157,7 +157,7 @@ void addPathConstraints(moveit::planning_interface::MoveGroupInterface& move_gro
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "moveit_demo_1_node");
+  ros::init(argc, argv, "moveit_demo_3_node");
   ros::NodeHandle node_handle;
 
   // ROS spinning must be running for the MoveGroupInterface to get information
@@ -207,7 +207,7 @@ int main(int argc, char** argv)
   // Path Constraints
   // ^^^^^^^^^^^^^^^^
   // Add Path Constraints
-  // addPathConstraints(move_group_interface);
+  addPathConstraints(move_group_interface);
   // Clear Path Constraints
   // move_group_interface.clearPathConstraints();
 
@@ -249,13 +249,11 @@ int main(int argc, char** argv)
 
 
 
-
   // Set velocity and acceleration scaling factors
   // be careful when you add these parameters which may leads to contact
   // with the obstacles
   // move_group_interface.setMaxVelocityScalingFactor(0.05);
   // move_group_interface.setMaxAccelerationScalingFactor(0.05);
-
 
 
 
@@ -293,7 +291,6 @@ int main(int argc, char** argv)
   // Finally, to execute the trajectory stored in my_plan, you could use the following method call:
   // Note that this can lead to problems if the robot moved in the meanwhile.
   move_group_interface.execute(my_plan);
-
 
   /* Wait for MoveGroup to receive and process the attached collision object message */
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to once the collision object disappears");

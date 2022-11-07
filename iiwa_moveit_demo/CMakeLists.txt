@@ -142,6 +142,10 @@ add_executable(moveit_demo_1_node
   src/moveit_demo_1_node.cpp
 )
 
+add_executable(moveit_demo_3_node 
+  src/moveit_demo_3_node.cpp
+)
+
 add_executable(deprecated_demo_1_node 
   src/deprecated/deprecated_demo_1_node.cpp
 )
@@ -163,6 +167,11 @@ add_executable(deprecated_demo_1_node
 target_link_libraries(moveit_demo_1_node
   ${catkin_LIBRARIES}
 )
+
+target_link_libraries(moveit_demo_3_node
+  ${catkin_LIBRARIES}
+)
+
 
 target_link_libraries(deprecated_demo_1_node
   ${catkin_LIBRARIES}
