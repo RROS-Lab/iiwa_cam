@@ -16,6 +16,8 @@ There are two ways:
     `roslaunch iiwa_cam moveit_kuka.launch`  
     then you can trag the end effector, paln and execute.
 
+  **IMPORTANT NOTE**: Check the robot name in the [source code 1 (around line 20)](../src/utilities/moveit_rviz_exec_service.cpp) and [source code 2 (around line 56)](../src/utilities/moveit_rviz_state_receiver_service.cpp)  
+
 1. Control real kuka using Cpp/Python Program:  
     **Demo File**: [moveit_plan_and_exec_node.cpp](../src/demo/moveit_plan_and_exec_node.cpp)
 
