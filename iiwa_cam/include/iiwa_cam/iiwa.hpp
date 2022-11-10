@@ -822,7 +822,8 @@ class Kuka {
 
   /**
    * @brief Move robot along a trajectory in cartesian space, use
-   * set_cart_traj_vel_acc() before this method to set speed
+   * set_cart_traj_vel_acc() and set_vel_acc_drop () before this 
+   * method to set speed
    *
    * @param trajectory
    * @param status status of start point, default = -1

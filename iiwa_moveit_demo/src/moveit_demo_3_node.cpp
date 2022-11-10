@@ -258,43 +258,52 @@ int main(int argc, char** argv)
 
 
 
-  // Planning to a Pose goal
-  // ^^^^^^^^^^^^^^^^^^^^^^^
-  // We can plan a motion for this group to a desired pose for the
-  // end-effector.
-  geometry_msgs::Pose target_pose1;
-  target_pose1.orientation.y = 1.0;
-  target_pose1.position.x = 0.3;
-  target_pose1.position.y = 0.5;
-  target_pose1.position.z = 0.05;
-  move_group_interface.setPoseTarget(target_pose1);
+  for (int i = 0; i < 10; i++) {
+    // Planning to a Pose goal
+    // ^^^^^^^^^^^^^^^^^^^^^^^
+    // We can plan a motion for this group to a desired pose for the
+    // end-effector.
+    geometry_msgs::Pose target_pose1;
+    target_pose1.orientation.y = 1.0;
+    target_pose1.position.x = 0.3;
+    target_pose1.position.y = 0.5;
+    target_pose1.position.z = 0.05;
+    move_group_interface.setPoseTarget(target_pose1);
 
-  // Now, we call the planner to compute the plan and visualize it.
-  // Note that we are just planning, not asking move_group_interface
-  // to actually move the robot.
-  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+    // Now, we call the planner to compute the plan and visualize it.
+    // Note that we are just planning, not asking move_group_interface
+    // to actually move the robot.
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
-  // Now when we plan a trajectory it will avoid the obstacle
-  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    // Now when we plan a trajectory it will avoid the obstacle
+    bool success = (move_group_interface.plan(my_plan) ==
+                    moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
+    ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s",
+                   success ? "" : "FAILED");
 
-  // Visualizing plans
-  // ^^^^^^^^^^^^^^^^^
-  // We can also visualize the plan as a line with markers in RViz.
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
-  visual_tools.publishAxisLabeled(target_pose1, "pose1");
-  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo (execute plan)");
+    // Visualizing plans
+    // ^^^^^^^^^^^^^^^^^
+    // We can also visualize the plan as a line with markers in RViz.
+    ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
+    visual_tools.publishAxisLabeled(target_pose1, "pose1");
+    visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+    visual_tools.trigger();
+    visual_tools.prompt(
+        "Press 'next' in the RvizVisualToolsGui window to continue the demo "
+        "(execute plan)");
 
-  // Finally, to execute the trajectory stored in my_plan, you could use the following method call:
-  // Note that this can lead to problems if the robot moved in the meanwhile.
-  move_group_interface.execute(my_plan);
+    // Finally, to execute the trajectory stored in my_plan, you could use the
+    // following method call: Note that this can lead to problems if the robot
+    // moved in the meanwhile.
+    move_group_interface.execute(my_plan);
 
-  /* Wait for MoveGroup to receive and process the attached collision object message */
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to once the collision object disappears");
-
+    /* Wait for MoveGroup to receive and process the attached collision object
+     * message */
+    visual_tools.prompt(
+        "Press 'next' in the RvizVisualToolsGui window to once the collision "
+        "object disappears");
+  }
   // END_TUTORIAL
 
   ros::shutdown();

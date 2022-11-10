@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find iiwa_moveit_cam)/launch/demo.launch"/>
+  <include file="$(find iiwa_moveit_demo)/launch/load_robot.launch"/>
   <param name="move_group/constraint_approximations_path" value="config/JointConstraint"/>
 
   <node pkg="iiwa_moveit_demo" type="moveit_demo_3_node" name="moveit_demo_3_node" output="screen"/>
