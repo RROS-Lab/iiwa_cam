@@ -146,8 +146,8 @@ add_executable(moveit_demo_3_node
   src/moveit_demo_3_node.cpp
 )
 
-add_executable(deprecated_demo_1_node 
-  src/deprecated/deprecated_demo_1_node.cpp
+add_executable(moveit_demo_4_node 
+  src/moveit_demo_4_node.cpp
 )
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -173,7 +173,7 @@ target_link_libraries(moveit_demo_3_node
 )
 
 
-target_link_libraries(deprecated_demo_1_node
+target_link_libraries(moveit_demo_4_node
   ${catkin_LIBRARIES}
 )
 #############

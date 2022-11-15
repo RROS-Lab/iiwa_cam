@@ -32,19 +32,33 @@
   addPathConstraints(move_group_interface);
   ```
 
-  Compile and then run demo using:
+  Run demo using:
   ```
   roslaunch iiwa_moveit_demo moveit_demo_3.launch 
   ```
 
   ![demo_3](./asset/gif/demo_3.gif)
 
+
+
+## Demo 4
+  Plan trajectories with **collision objects**, using _Planning Pipeline_.  
+  [source code](./src/moveit_demo_4_node.cpp)  
+
+
+  Run demo using:
+  ```
+  roslaunch iiwa_moveit_demo moveit_demo_4.launch 
+  ```
+
+  ![demo_4](./asset/gif/demo_4.gif)
+
 ## Deprecated Method
 
 ### Using planning_interface::PlanningContext
 
   This method is not able to avoid obstacles  
-  [source code](./src/deprecated/deprecated_demo_1_node.cpp)  
+  [source code](./src/deprecated/deprecated_demo_2_node.cpp)  
 
 
 ## Dependencies

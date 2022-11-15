@@ -33,6 +33,7 @@
  *********************************************************************/
 
 /* Author: Sachin Chitta, Mike Lautman*/
+/* Modified By: Peijie Xu*/
 
 #include <pluginlib/class_loader.h>
 #include <ros/ros.h>
@@ -41,7 +42,6 @@
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_pipeline/planning_pipeline.h>
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -52,10 +52,8 @@
 
 #include <moveit_visual_tools/moveit_visual_tools.h>
 
-void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface)
-{
-  // BEGIN_SUB_TUTORIAL box1
-  //
+void addCollisionObjects() {
+
   // Creating Environment
   // ^^^^^^^^^^^^^^^^^^^^
   // Create vector to hold 2 collision objects.
@@ -80,12 +78,9 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& pla
   collision_objects[0].primitive_poses[0].position.y = 0.2;
   collision_objects[0].primitive_poses[0].position.z = 0.15;
   collision_objects[0].primitive_poses[0].orientation.w = 1.0;
-  // END_SUB_TUTORIAL
 
-  collision_objects[0].operation = moveit_msgs::CollisionObject::ADD;
 
-  // BEGIN_SUB_TUTORIAL box2
-  // Add the second table where we will be placing the cube.
+  // Add the second box where we will be placing the cube.
   collision_objects[1].id = "box2";
   collision_objects[1].header.frame_id = "iiwa_link_0";
 
@@ -103,46 +98,31 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& pla
   collision_objects[1].primitive_poses[0].position.y = 0.3;
   collision_objects[1].primitive_poses[0].position.z = 0.05;
   collision_objects[1].primitive_poses[0].orientation.w = 1.0;
-  // END_SUB_TUTORIAL
 
-  collision_objects[1].operation = moveit_msgs::CollisionObject::ADD;
 
-  // planning_scene_interface.addCollisionObjects(collision_objects);
-  // planning_scene_interface.applyCollisionObjects(collision_objects);
-
-  if (false) {
-    std::vector<moveit_msgs::AttachedCollisionObject> attached_objects(2);
-    for (int i = 0; i < 2; i++) {
-      attached_objects[i].object = collision_objects[i];
-      attached_objects[i].link_name = "iiwa_link_0";
-    }
-
-    planning_scene_interface.applyAttachedCollisionObjects(attached_objects);
-  }
-
-  if(!false){
+  {
     ros::NodeHandle nh;
     auto pub = nh.advertise<moveit_msgs::CollisionObject>(
-        planning_scene_monitor::PlanningSceneMonitor::
-            DEFAULT_COLLISION_OBJECT_TOPIC,
-        50);
-    int i = 1;
-    while (i-- > 0) {
-      ros::Rate(2).sleep();
-      pub.publish(collision_objects[0]);
+        planning_scene_monitor::PlanningSceneMonitor::DEFAULT_COLLISION_OBJECT_TOPIC, 50);
 
-      pub.publish(collision_objects[1]);
-      ros::Rate(2).sleep();
-    }
+    ros::Rate(2).sleep();
+    std::for_each(collision_objects.begin(), collision_objects.end(), [&pub](auto& obj) {
+      obj.operation = moveit_msgs::CollisionObject::ADD;
+      pub.publish(obj);
+    });
+    ros::Rate(2).sleep();
+
   }
 }
 
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "move_group_tutorial");
+int main(int argc, char** argv) {
+  ros::init(argc, argv, "moveit_demo_4_node");
   ros::AsyncSpinner spinner(1);
   spinner.start();
   ros::NodeHandle node_handle("~");
+
+
+
 
   // BEGIN_TUTORIAL
   // Start
@@ -158,14 +138,16 @@ int main(int argc, char** argv)
   robot_model_loader::RobotModelLoaderPtr robot_model_loader(
       new robot_model_loader::RobotModelLoader("robot_description"));
 
+
+
+
+
   // Using the RobotModelLoader, we can construct a planing scene monitor that
   // will create a planning scene, monitors planning scene diffs, and apply the diffs to it's
   // internal planning scene. We then call startSceneMonitor, startWorldGeometryMonitor and
   // startStateMonitor to fully initialize the planning scene monitor
   planning_scene_monitor::PlanningSceneMonitorPtr psm(
       new planning_scene_monitor::PlanningSceneMonitor(robot_model_loader));
-
-
 
   /* listen for planning scene messages on topic /XXX and apply them to
                        the internal planning scene accordingly */
@@ -175,6 +157,10 @@ int main(int argc, char** argv)
   /* listen to joint state updates as well as changes in attached collision objects
                         and update the internal planning scene accordingly*/
   psm->startStateMonitor();
+
+
+
+
 
   /* We can also use the RobotModelLoader to get a robot model which contains the robot's kinematic information */
   moveit::core::RobotModelPtr robot_model = robot_model_loader->getModel();
@@ -194,38 +180,11 @@ int main(int argc, char** argv)
   planning_pipeline::PlanningPipelinePtr planning_pipeline(
       new planning_pipeline::PlanningPipeline(robot_model, node_handle, "planning_plugin", "request_adapters"));
 
-    // Add collision objects into the interface
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-  addCollisionObjects(planning_scene_interface);
 
-  if(false){
-    // psm->DEFAULT_PLANNING_SCENE_TOPIC
-    std::vector<moveit_msgs::CollisionObject> collision_objs;
-    auto planning_scene_ptr =
-        planning_scene_monitor::LockedPlanningSceneRW(psm);
-    planning_scene_ptr->getCollisionObjectMsgs(collision_objs);
 
-    auto current_state = &planning_scene_ptr->getCurrentStateNonConst();
-    // TODO: XPJ : check collision
+  // Add collision objects into the planning scence
+  addCollisionObjects();
 
-    current_state->setJointGroupPositions(joint_model_group,
-                                          {0, 1.92, 0, 0, 0, 0, 0});
-    auto acm = planning_scene_ptr->getAllowedCollisionMatrix();
-
-    collision_detection::CollisionRequest collision_request;
-    collision_detection::CollisionResult collision_result;
-
-    collision_result.clear();
-    planning_scene_ptr->checkCollision(collision_request, collision_result,
-                                   *current_state, acm);
-
-    ROS_WARN(
-        "RROS: planning_scene_ptr->getCollisionObjectMsgs(collision_objs) got "
-        "size: %ld",
-        collision_objs.size());
-
-    std::cout << collision_result.collision << std::endl;
-  }
 
   // Visualization
   // ^^^^^^^^^^^^^
@@ -253,8 +212,7 @@ int main(int argc, char** argv)
 
 
   int i = 10;
-  while (i-- > 0)
-  {
+  while (i-- > 0) {
     // Pose Goal
     // ^^^^^^^^^
     // We will now create a motion plan request for the right arm of the Panda
@@ -293,9 +251,7 @@ int main(int argc, char** argv)
       planning_pipeline->generatePlan(lscene, req, res);
     }
 
-    
-
-
+  
 
     /* Now, call the pipeline and check whether planning was successful. */
     /* Check that the planning was successful */
@@ -324,130 +280,7 @@ int main(int argc, char** argv)
 
     /* Wait for user input */
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-  // // Joint Space Goals
-  // // ^^^^^^^^^^^^^^^^^
-  // /* First, set the state in the planning scene to the final state of the last plan */
-  // robot_state = planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentStateUpdated(response.trajectory_start);
-  // robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
-  // moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
-
-  // // Now, setup a joint space goal
-  // moveit::core::RobotState goal_state(*robot_state);
-  // std::vector<double> joint_values = { -1.0, 0.7, 0.7, -1.5, -0.7, 2.0, 0.0 };
-  // goal_state.setJointGroupPositions(joint_model_group, joint_values);
-  // moveit_msgs::Constraints joint_goal = kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group);
-
-  // req.goal_constraints.clear();
-  // req.goal_constraints.push_back(joint_goal);
-
-  // // Before planning, we will need a Read Only lock on the planning scene so that it does not modify the world
-  // // representation while planning
-  // {
-  //   planning_scene_monitor::LockedPlanningSceneRO lscene(psm);
-  //   /* Now, call the pipeline and check whether planning was successful. */
-  //   planning_pipeline->generatePlan(lscene, req, res);
-  // }
-  // /* Check that the planning was successful */
-  // if (res.error_code_.val != res.error_code_.SUCCESS)
-  // {
-  //   ROS_ERROR("Could not compute plan successfully");
-  //   return 0;
-  // }
-  // /* Visualize the trajectory */
-  // ROS_INFO("Visualizing the trajectory");
-  // res.getMessage(response);
-  // display_trajectory.trajectory_start = response.trajectory_start;
-  // display_trajectory.trajectory.push_back(response.trajectory);
-  // // Now you should see two planned trajectories in series
-  // display_publisher.publish(display_trajectory);
-  // visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
-  // visual_tools.trigger();
-
-  // /* Wait for user input */
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
-
-  // // Using a Planning Request Adapter
-  // // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  // // A planning request adapter allows us to specify a series of operations that
-  // // should happen either before planning takes place or after the planning
-  // // has been done on the resultant path
-
-  // /* First, set the state in the planning scene to the final state of the last plan */
-  // robot_state = planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentStateUpdated(response.trajectory_start);
-  // robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
-  // moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
-
-  // // Now, set one of the joints slightly outside its upper limit
-  // const moveit::core::JointModel* joint_model = joint_model_group->getJointModel("panda_joint3");
-  // const moveit::core::JointModel::Bounds& joint_bounds = joint_model->getVariableBounds();
-  // std::vector<double> tmp_values(1, 0.0);
-  // tmp_values[0] = joint_bounds[0].min_position_ - 0.01;
-  // robot_state->setJointPositions(joint_model, tmp_values);
-
-  // req.goal_constraints.clear();
-  // req.goal_constraints.push_back(pose_goal);
-
-  // // Before planning, we will need a Read Only lock on the planning scene so that it does not modify the world
-  // // representation while planning
-  // {
-  //   planning_scene_monitor::LockedPlanningSceneRO lscene(psm);
-  //   /* Now, call the pipeline and check whether planning was successful. */
-  //   planning_pipeline->generatePlan(lscene, req, res);
-  // }
-  // if (res.error_code_.val != res.error_code_.SUCCESS)
-  // {
-  //   ROS_ERROR("Could not compute plan successfully");
-  //   return 0;
-  // }
-  // /* Visualize the trajectory */
-  // ROS_INFO("Visualizing the trajectory");
-  // res.getMessage(response);
-  // display_trajectory.trajectory_start = response.trajectory_start;
-  // display_trajectory.trajectory.push_back(response.trajectory);
-  // /* Now you should see three planned trajectories in series*/
-  // display_publisher.publish(display_trajectory);
-  // visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
-  // visual_tools.trigger();
-
-  // /* Wait for user input */
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to finish the demo");
+  }
 
   ROS_INFO("Done");
   return 0;

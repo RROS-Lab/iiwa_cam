@@ -8,9 +8,7 @@
 
   <include file="$(find iiwa_moveit_demo)/launch/load_robot.launch"/>
 
-  
-
-  <node name="deprecated_demo_1_node" pkg="iiwa_moveit_demo" type="deprecated_demo_1_node" respawn="false" launch-prefix="$(arg launch_prefix)" output="screen">
+  <node name="moveit_demo_4_node" pkg="iiwa_moveit_demo" type="moveit_demo_4_node" respawn="false" launch-prefix="$(arg launch_prefix)" output="screen">
     <param name="planning_plugin" value="$(arg planning_plugin)" />
     <param name="request_adapters" value="$(arg planning_adapters)" />
     <param name="start_state_max_bounds_error" value="0.1" />

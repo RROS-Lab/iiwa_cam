@@ -32,6 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+/* Modified By: Peijie Xu*/
+
 
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
@@ -45,9 +47,6 @@
 #include <moveit_msgs/CollisionObject.h>
 
 #include <moveit_visual_tools/moveit_visual_tools.h>
-
-// #include <moveit/ompl_interface/ompl_interface.h>
-// #include <ompl/control/SimpleSetup.h>
 
 
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
@@ -294,7 +293,7 @@ int main(int argc, char** argv)
     // Finally, to execute the trajectory stored in my_plan, you could use the
     // following method call: Note that this can lead to problems if the robot
     // moved in the meanwhile.
-    move_group_interface.execute(my_plan);
+    // move_group_interface.execute(my_plan);
 
     /* Wait for MoveGroup to receive and process the attached collision object
      * message */
