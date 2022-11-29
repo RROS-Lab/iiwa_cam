@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   rviz_visual_tools
   iiwa_moveit_cam
+  iiwa_cam
 )
 
 ## System dependencies are found with CMake's conventions
@@ -149,6 +150,10 @@ add_executable(moveit_demo_3_node
 add_executable(moveit_demo_4_node 
   src/moveit_demo_4_node.cpp
 )
+
+add_executable(moveit_demo_5_node 
+  src/moveit_demo_5_node.cpp
+)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -174,6 +179,10 @@ target_link_libraries(moveit_demo_3_node
 
 
 target_link_libraries(moveit_demo_4_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(moveit_demo_5_node
   ${catkin_LIBRARIES}
 )
 #############

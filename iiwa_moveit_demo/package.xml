@@ -56,6 +56,7 @@
   <build_depend>rospy</build_depend>
   <build_depend>rviz_visual_tools</build_depend>
   <build_depend>iiwa_moveit_cam</build_depend>
+  <build_depend>iiwa_cam</build_depend>
 
   <build_export_depend>moveit_msgs</build_export_depend>
   <build_export_depend>moveit_ros_planning_interface</build_export_depend>
@@ -64,6 +65,7 @@
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>rviz_visual_tools</build_export_depend>
   <build_export_depend>iiwa_moveit_cam</build_export_depend>
+  <build_export_depend>iiwa_cam</build_export_depend>
   
   <exec_depend>moveit_msgs</exec_depend>
   <exec_depend>moveit_ros_planning_interface</exec_depend>
@@ -72,6 +74,7 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>rviz_visual_tools</exec_depend>
   <exec_depend>iiwa_moveit_cam</exec_depend>
+  <exec_depend>iiwa_cam</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
