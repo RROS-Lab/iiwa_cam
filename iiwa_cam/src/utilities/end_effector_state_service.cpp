@@ -121,7 +121,7 @@ class KukaWatchDog {
  */
 class KukaRecorder {
   friend KukaWatchDog;
-  const int WRENCH_HIS_QUEUE_SIZE = 30;
+  const int WRENCH_HIS_QUEUE_SIZE = 10;  // size of wrench_history queue
 
  public:
   bool recorder_state = false;  // protected by mtx
@@ -145,8 +145,9 @@ class KukaRecorder {
   std::ofstream cart_pos_stream;
   std::ofstream wrench_stream;
 
-  geometry_msgs::Pose cart_pose;  // protected by mtx
-  int status;                     // protected by mtx
+  geometry_msgs::Pose cart_pose;      // protected by mtx
+  geometry_msgs::Pose cart_velocity;  // protected by mtx
+  int status;                         // protected by mtx
   ros::Time timestamp;
 
   // protected by wrench_mtx, max size = WRENCH_HIS_QUEUE_SIZE
@@ -166,17 +167,6 @@ class KukaRecorder {
       wrench_msg.header.frame_id = "iiwa_link_7";
 
       wrench_pub.publish(wrench_msg);
-
-      std::lock_guard<std::mutex> lock(*wrench_mtx);
-
-      wrench_history.emplace_back(msg.wrench);
-      // auto end_pos = wrench_history.begin() + wrench_history.size() -
-      //                WRENCH_HIS_QUEUE_SIZE;
-      // if (end_pos != wrench_history.begin())
-      //   wrench_history.erase(wrench_history.begin(), end_pos);
-
-      while (wrench_history.size() > WRENCH_HIS_QUEUE_SIZE)
-        wrench_history.pop_front();
     }
 
     // as the kuka robot publishes topic at a period of 1 ms (line 340 in
@@ -186,6 +176,15 @@ class KukaRecorder {
       return;
     else
       cnt = 0;
+
+    {
+      std::lock_guard<std::mutex> lock(*wrench_mtx);
+
+      wrench_history.emplace_back(msg.wrench);
+
+      while (wrench_history.size() > WRENCH_HIS_QUEUE_SIZE) 
+        wrench_history.pop_front();
+    }
 
     {
       std::lock_guard<std::mutex> lock(*mtx);
@@ -216,8 +215,29 @@ class KukaRecorder {
     else
       cnt = 0;
 
+    static int velocity_cal_cnt = 0;
+
     {
       std::lock_guard<std::mutex> lock(*mtx);
+
+      // calculate the velocity for every 50 ms
+      if (++velocity_cal_cnt >= 10) {
+        velocity_cal_cnt = 0;
+
+        double delta_time = (msg.poseStamped.header.stamp - timestamp).toSec();
+        const geometry_msgs::Pose &msg_pose = msg.poseStamped.pose;
+        cart_velocity.position.x = (msg_pose.position.x - cart_pose.position.x) / delta_time;
+        cart_velocity.position.y = (msg_pose.position.y - cart_pose.position.y) / delta_time;
+        cart_velocity.position.z = (msg_pose.position.z - cart_pose.position.z) / delta_time;
+        cart_velocity.orientation.w =
+            (msg_pose.orientation.w - cart_pose.orientation.w) / delta_time;
+        cart_velocity.orientation.x =
+            (msg_pose.orientation.x - cart_pose.orientation.x) / delta_time;
+        cart_velocity.orientation.y =
+            (msg_pose.orientation.y - cart_pose.orientation.y) / delta_time;
+        cart_velocity.orientation.z =
+            (msg_pose.orientation.z - cart_pose.orientation.z) / delta_time;
+      }
 
       cart_pose = msg.poseStamped.pose;
       status = msg.redundancy.status;
@@ -237,8 +257,7 @@ class KukaRecorder {
   KukaRecorder() = default;
 
   KukaRecorder(ros::NodeHandle &nh, std::string name)
-      : cart_pos_stream(name + "_cart_path.csv"),
-        wrench_stream(name + "_wrench.csv") {
+      : cart_pos_stream(name + "_cart_path.csv"), wrench_stream(name + "_wrench.csv") {
     mtx = new std::mutex();
     wrench_mtx = new std::mutex();
 
@@ -248,10 +267,10 @@ class KukaRecorder {
     csv2::Writer<csv2::delimiter<','>> cart_pos_writer(cart_pos_stream);
     csv2::Writer<csv2::delimiter<','>> wrench_writer(wrench_stream);
 
-    cart_pos_writer.write_row(std::vector<std::string>{
-        "X", "Y", "Z", "w", "x", "y", "z", "status", "time(ns)"});
-    wrench_writer.write_row(std::vector<std::string>{"Fx", "Fy", "Fz", "Tx",
-                                                     "Ty", "Tz", "time(ns)"});
+    cart_pos_writer.write_row(
+        std::vector<std::string>{"X", "Y", "Z", "w", "x", "y", "z", "status", "time(ns)"});
+    wrench_writer.write_row(
+        std::vector<std::string>{"Fx", "Fy", "Fz", "Tx", "Ty", "Tz", "time(ns)"});
 
     std::cout << name << std::endl;
     robot_name = name;
@@ -264,8 +283,8 @@ class KukaRecorder {
     cart_pos_sub = nh.subscribe(robot_ns + "/state/CartesianPose", 20,
                                 &KukaRecorder::cart_pos_callback, this);
 
-    wrench_pub = nh.advertise<geometry_msgs::WrenchStamped>(
-        robot_ns + "/state/EndEffectorWrench", 10);
+    wrench_pub =
+        nh.advertise<geometry_msgs::WrenchStamped>(robot_ns + "/state/EndEffectorWrench", 10);
 
     dog = nullptr;
   }
@@ -300,13 +319,13 @@ class KukaRecorder {
    */
   void fill_response(iiwa_cam::EndEffectorWrench::Response &res) {
     res.pose = cart_pose;
+    res.velocity = cart_velocity;
     res.status = status;
     res.stamp = timestamp;
 
-    res.wrenches.resize(30);
+    res.wrenches.resize(WRENCH_HIS_QUEUE_SIZE);
     std::lock_guard<std::mutex> lock(*wrench_mtx);
-    std::copy(wrench_history.begin(), wrench_history.end(),
-              res.wrenches.begin());
+    std::copy(wrench_history.begin(), wrench_history.end(), res.wrenches.begin());
   }
 
   const std::string &get_name() const { return robot_name; }
@@ -318,8 +337,7 @@ class KukaRecorder {
    *
    */
   void clean_cart_pos_queue() {
-    cart_pos_stream.open(robot_name + "_cart_path.csv",
-                         std::ios::out | std::ios::app);
+    cart_pos_stream.open(robot_name + "_cart_path.csv", std::ios::out | std::ios::app);
 
     csv2::Writer<csv2::delimiter<','>> cart_pos_writer(cart_pos_stream);
 
@@ -342,8 +360,7 @@ class KukaRecorder {
    *
    */
   void clean_wrench_queue() {
-    wrench_stream.open(robot_name + "_wrench.csv",
-                       std::ios::out | std::ios::app);
+    wrench_stream.open(robot_name + "_wrench.csv", std::ios::out | std::ios::app);
     csv2::Writer<csv2::delimiter<','>> wrench_writer(wrench_stream);
 
     std::vector<std::vector<std::string>> output;
@@ -366,8 +383,7 @@ namespace cam {
 
 KukaWatchDog::KukaWatchDog(KukaRecorder *recorder, uint32_t timer) {
   mtx = new std::mutex();
-  threshold_time.sec =
-      (timer < KUKA_WD_TIMEOUT_MIN) ? KUKA_WD_TIMEOUT_MIN : timer;
+  threshold_time.sec = (timer < KUKA_WD_TIMEOUT_MIN) ? KUKA_WD_TIMEOUT_MIN : timer;
   sleep_time = threshold_time * 2;
   feed();
   std::thread(std::bind(&KukaWatchDog::watcher, this, recorder)).detach();
@@ -388,8 +404,8 @@ void KukaWatchDog::bark(KukaRecorder *recorder) {
   recorder->clean_wrench_queue();
   recorder->recorder_state = false;
   recorder->dog = nullptr;
-  std::cout << "Watch Dog of " << recorder->get_name()
-            << ": no feed, stop recording!" << std::endl;
+  std::cout << "Watch Dog of " << recorder->get_name() << ": no feed, stop recording!"
+            << std::endl;
   this->~KukaWatchDog();
 }
 
@@ -426,8 +442,7 @@ static std::unordered_map<std::string, cam::KukaRecorder *> pr_map;
  * @param res
  * @return true once the reqest is served
  */
-bool pr_callback(iiwa_cam::PathRecorder::Request &req,
-                 iiwa_cam::PathRecorder::Response &res) {
+bool pr_callback(iiwa_cam::PathRecorder::Request &req, iiwa_cam::PathRecorder::Response &res) {
   auto pr_iter = pr_map.find(req.robot_name);
   if (pr_iter == pr_map.end()) {
     res.error = "No robot named " + req.robot_name + " is being listening to";
@@ -529,8 +544,7 @@ int main(int argc, char *argv[]) {
     pr_map[name] = new cam::KukaRecorder(nh, name);
   }
 
-  ros::ServiceServer pr_service =
-      nh.advertiseService("/cam/iiwa/PathRecorder", pr_callback);
+  ros::ServiceServer pr_service = nh.advertiseService("/cam/iiwa/PathRecorder", pr_callback);
 
   ros::ServiceServer ee_pos_service =
       nh.advertiseService("/cam/iiwa/EndEffectorState", ee_pos_callback);

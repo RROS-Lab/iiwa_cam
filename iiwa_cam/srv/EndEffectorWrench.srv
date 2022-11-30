@@ -4,10 +4,13 @@ string robot_name
 bool success
 string error
 
+# end effector Pose in last 50 ms
 time stamp
 geometry_msgs/Pose pose
+geometry_msgs/Pose velocity
 int32 status
 
+# end effector Wrenches in last 50 ms (default size of 10)
 geometry_msgs/Wrench[] wrenches
 
 
