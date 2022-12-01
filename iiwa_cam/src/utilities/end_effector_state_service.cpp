@@ -1,7 +1,7 @@
 
 // iiwa_cam pkg defined srvs
+#include <iiwa_cam/EndEffectorPose.h>
 #include <iiwa_cam/EndEffectorState.h>
-#include <iiwa_cam/EndEffectorWrench.h>
 #include <iiwa_cam/PathRecorder.h>
 
 // iiwa_stack_cam defined msgs srvs acts
@@ -182,7 +182,7 @@ class KukaRecorder {
 
       wrench_history.emplace_back(msg.wrench);
 
-      while (wrench_history.size() > WRENCH_HIS_QUEUE_SIZE) 
+      while (wrench_history.size() > WRENCH_HIS_QUEUE_SIZE)
         wrench_history.pop_front();
     }
 
@@ -229,14 +229,10 @@ class KukaRecorder {
         cart_velocity.position.x = (msg_pose.position.x - cart_pose.position.x) / delta_time;
         cart_velocity.position.y = (msg_pose.position.y - cart_pose.position.y) / delta_time;
         cart_velocity.position.z = (msg_pose.position.z - cart_pose.position.z) / delta_time;
-        cart_velocity.orientation.w =
-            (msg_pose.orientation.w - cart_pose.orientation.w) / delta_time;
-        cart_velocity.orientation.x =
-            (msg_pose.orientation.x - cart_pose.orientation.x) / delta_time;
-        cart_velocity.orientation.y =
-            (msg_pose.orientation.y - cart_pose.orientation.y) / delta_time;
-        cart_velocity.orientation.z =
-            (msg_pose.orientation.z - cart_pose.orientation.z) / delta_time;
+        cart_velocity.orientation.w = (msg_pose.orientation.w - cart_pose.orientation.w) / delta_time;
+        cart_velocity.orientation.x = (msg_pose.orientation.x - cart_pose.orientation.x) / delta_time;
+        cart_velocity.orientation.y = (msg_pose.orientation.y - cart_pose.orientation.y) / delta_time;
+        cart_velocity.orientation.z = (msg_pose.orientation.z - cart_pose.orientation.z) / delta_time;
       }
 
       cart_pose = msg.poseStamped.pose;
@@ -267,24 +263,19 @@ class KukaRecorder {
     csv2::Writer<csv2::delimiter<','>> cart_pos_writer(cart_pos_stream);
     csv2::Writer<csv2::delimiter<','>> wrench_writer(wrench_stream);
 
-    cart_pos_writer.write_row(
-        std::vector<std::string>{"X", "Y", "Z", "w", "x", "y", "z", "status", "time(ns)"});
-    wrench_writer.write_row(
-        std::vector<std::string>{"Fx", "Fy", "Fz", "Tx", "Ty", "Tz", "time(ns)"});
+    cart_pos_writer.write_row(std::vector<std::string>{"X", "Y", "Z", "w", "x", "y", "z", "status", "time(ns)"});
+    wrench_writer.write_row(std::vector<std::string>{"Fx", "Fy", "Fz", "Tx", "Ty", "Tz", "time(ns)"});
 
     std::cout << name << std::endl;
     robot_name = name;
 
     std::string robot_ns = "/" + robot_name;
 
-    wrench_sub = nh.subscribe(robot_ns + "/state/CartesianWrench", 20,
-                              &KukaRecorder::wrench_callback, this);
+    wrench_sub = nh.subscribe(robot_ns + "/state/CartesianPose", 20, &KukaRecorder::wrench_callback, this);
 
-    cart_pos_sub = nh.subscribe(robot_ns + "/state/CartesianPose", 20,
-                                &KukaRecorder::cart_pos_callback, this);
+    cart_pos_sub = nh.subscribe(robot_ns + "/state/CartesianPose", 20, &KukaRecorder::cart_pos_callback, this);
 
-    wrench_pub =
-        nh.advertise<geometry_msgs::WrenchStamped>(robot_ns + "/state/EndEffectorWrench", 10);
+    wrench_pub = nh.advertise<geometry_msgs::WrenchStamped>(robot_ns + "/state/EndEffectorWrench", 10);
 
     dog = nullptr;
   }
@@ -301,6 +292,17 @@ class KukaRecorder {
   }
 
   /**
+   * @brief fill out the response data in EndEffectorPose
+   *
+   * @pre get the mutex
+   *
+   */
+  void fill_response(iiwa_cam::EndEffectorPose::Response &res) {
+    res.pose = cart_pose;
+    res.status = status;
+  }
+
+  /**
    * @brief fill out the response data in EndEffectorState
    *
    * @pre get the mutex
@@ -308,18 +310,8 @@ class KukaRecorder {
    */
   void fill_response(iiwa_cam::EndEffectorState::Response &res) {
     res.pose = cart_pose;
-    res.status = status;
-  }
-
-  /**
-   * @brief fill out the response data in EndEffectorWrench
-   *
-   * @pre get the mutex
-   *
-   */
-  void fill_response(iiwa_cam::EndEffectorWrench::Response &res) {
-    res.pose = cart_pose;
-    res.velocity = cart_velocity;
+    // TODO: use jacobian matrix to calculate the cartesian velocity
+    // res.velocity = cart_velocity;
     res.status = status;
     res.stamp = timestamp;
 
@@ -404,8 +396,7 @@ void KukaWatchDog::bark(KukaRecorder *recorder) {
   recorder->clean_wrench_queue();
   recorder->recorder_state = false;
   recorder->dog = nullptr;
-  std::cout << "Watch Dog of " << recorder->get_name() << ": no feed, stop recording!"
-            << std::endl;
+  std::cout << "Watch Dog of " << recorder->get_name() << ": no feed, stop recording!" << std::endl;
   this->~KukaWatchDog();
 }
 
@@ -486,8 +477,7 @@ bool pr_callback(iiwa_cam::PathRecorder::Request &req, iiwa_cam::PathRecorder::R
  * @param res
  * @return true once the reqest is served
  */
-bool ee_pos_callback(iiwa_cam::EndEffectorState::Request &req,
-                     iiwa_cam::EndEffectorState::Response &res) {
+bool ee_pos_callback(iiwa_cam::EndEffectorPose::Request &req, iiwa_cam::EndEffectorPose::Response &res) {
   auto pr_iter = pr_map.find(req.robot_name);
   if (pr_iter == pr_map.end()) {
     res.error = "No robot named " + req.robot_name + " is being listening to";
@@ -506,14 +496,13 @@ bool ee_pos_callback(iiwa_cam::EndEffectorState::Request &req,
 }
 
 /**
- * @brief Callback function for end effector current wrench inquiry
+ * @brief Callback function for end effector current state inquiry
  *
  * @param req
  * @param res
  * @return true once the reqest is served
  */
-bool ee_wrench_callback(iiwa_cam::EndEffectorWrench::Request &req,
-                        iiwa_cam::EndEffectorWrench::Response &res) {
+bool ee_state_callback(iiwa_cam::EndEffectorState::Request &req, iiwa_cam::EndEffectorState::Response &res) {
   auto pr_iter = pr_map.find(req.robot_name);
   if (pr_iter == pr_map.end()) {
     res.error = "No robot named " + req.robot_name + " is being listening to";
@@ -546,11 +535,9 @@ int main(int argc, char *argv[]) {
 
   ros::ServiceServer pr_service = nh.advertiseService("/cam/iiwa/PathRecorder", pr_callback);
 
-  ros::ServiceServer ee_pos_service =
-      nh.advertiseService("/cam/iiwa/EndEffectorState", ee_pos_callback);
+  ros::ServiceServer ee_pos_service = nh.advertiseService("/cam/iiwa/EndEffectorPose", ee_pos_callback);
 
-  ros::ServiceServer ee_wrench_service =
-      nh.advertiseService("/cam/iiwa/EndEffectorWrench", ee_wrench_callback);
+  ros::ServiceServer ee_wrench_service = nh.advertiseService("/cam/iiwa/EndEffectorState", ee_state_callback);
 
   ros::spin();
 

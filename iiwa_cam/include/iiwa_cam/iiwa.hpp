@@ -6,7 +6,7 @@
 #include <ros/ros.h>
 
 // iiwa_cam pkg defined srvs
-#include <iiwa_cam/EndEffectorState.h>
+#include <iiwa_cam/EndEffectorPose.h>
 #include <iiwa_cam/PathRecorder.h>
 
 // iiwa_stack_cam defined msgs srvs acts
@@ -39,7 +39,7 @@
 #include <thread>
 #include <vector>
 namespace cam {
-  constexpr int UNDEFINED_STATUS = -1;
+constexpr int UNDEFINED_STATUS = -1;
 }  // namespace cam
 
 namespace cam {
@@ -51,8 +51,7 @@ namespace cam {
  * @param file
  * @param traj
  */
-void read_cart_traj(char const *file, std::vector<geometry_msgs::Pose> &traj,
-                    std::vector<int> &status) {
+void read_cart_traj(char const *file, std::vector<geometry_msgs::Pose> &traj, std::vector<int> &status) {
   std::ifstream fp(file);
   std::string line;
   getline(fp, line);  // ignore the first line of csv file
@@ -107,7 +106,7 @@ class Kuka;
 
 class Kuka {
  public:
-  
+
   enum JOINT_SPLINE_MODE {
     POSITION_CONTROL_MODE = 0,
     JOINT_IMPEDANCE_MODE,
@@ -147,11 +146,9 @@ class Kuka {
 
     EndEffectorState(const std::string &rob_name) : name(rob_name) {
       ros::NodeHandle nh;
-      ee_recorder_client =
-          nh.serviceClient<iiwa_cam::PathRecorder>("/cam/iiwa/PathRecorder");
+      ee_recorder_client = nh.serviceClient<iiwa_cam::PathRecorder>("/cam/iiwa/PathRecorder");
 
-      ee_state_client = nh.serviceClient<iiwa_cam::EndEffectorState>(
-          "/cam/iiwa/EndEffectorState");
+      ee_pose_client = nh.serviceClient<iiwa_cam::EndEffectorPose>("/cam/iiwa/EndEffectorPose");
     }
 
     ~EndEffectorState() {
@@ -160,9 +157,9 @@ class Kuka {
     }
 
     std::pair<geometry_msgs::Pose, int> get_cart_pose() {
-      iiwa_cam::EndEffectorState msg;
+      iiwa_cam::EndEffectorPose msg;
       msg.request.robot_name = name;
-      ee_state_client.call(msg);
+      ee_pose_client.call(msg);
       if (!msg.response.success)
         std::cerr << msg.response.error << std::endl;
       return std::make_pair(msg.response.pose, msg.response.status);
@@ -218,17 +215,13 @@ class Kuka {
   ros::Publisher cart_ptp_droppable_pub;
   ros::Publisher cart_lin_droppable_pub;
 
-  actionlib::SimpleActionClient<iiwa_msgs::MoveToJointPositionAction>
-      *joint_pos_client;
+  actionlib::SimpleActionClient<iiwa_msgs::MoveToJointPositionAction> *joint_pos_client;
 
-  actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction>
-      *cartesian_pos_ptp_client;
+  actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction> *cartesian_pos_ptp_client;
 
-  actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction>
-      *cartesian_pos_lin_client;
+  actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction> *cartesian_pos_lin_client;
 
-  actionlib::SimpleActionClient<iiwa_msgs::MoveAlongSplineAction>
-      *cartesian_spline_client;
+  actionlib::SimpleActionClient<iiwa_msgs::MoveAlongSplineAction> *cartesian_spline_client;
 
   double m_joint_vel = 0;
   double m_joint_acc = 0;
@@ -255,15 +248,13 @@ class Kuka {
   EndEffectorState ee_state;
 
  private:
-  iiwa_msgs::MoveToCartesianPoseAction build_cart_act(
-      const geometry_msgs::Pose &pose, int status = UNDEFINED_STATUS,
-      double e1 = 0.0) {
+  iiwa_msgs::MoveToCartesianPoseAction build_cart_act(const geometry_msgs::Pose &pose, int status = UNDEFINED_STATUS,
+                                                      double e1 = 0.0) {
     // action msg difinition
     iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
 
     // set goal
-    auto &poseStamped =
-        cartesian_pos_act.action_goal.goal.cartesian_pose.poseStamped;
+    auto &poseStamped = cartesian_pos_act.action_goal.goal.cartesian_pose.poseStamped;
 
     if (status == UNDEFINED_STATUS) {
       status = 2;
@@ -271,8 +262,7 @@ class Kuka {
         status = 5;
     }
 
-    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status =
-        status;
+    cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.status = status;
     cartesian_pos_act.action_goal.goal.cartesian_pose.redundancy.e1 = e1;
     // see pdf 391
 
@@ -294,58 +284,46 @@ class Kuka {
     iiwa_name = std::move(ss.str());
 
     cart_spline_vel_client =
-        nh.serviceClient<iiwa_msgs::SetPTPCartesianSpeedLimits>(
-            iiwa_name + "/configuration/setPTPCartesianLimits");
+        nh.serviceClient<iiwa_msgs::SetPTPCartesianSpeedLimits>(iiwa_name + "/configuration/setPTPCartesianLimits");
 
-    joint_vel_client = nh.serviceClient<iiwa_msgs::SetPTPJointSpeedLimits>(
-        iiwa_name + "/configuration/setPTPJointLimits");
+    joint_vel_client =
+        nh.serviceClient<iiwa_msgs::SetPTPJointSpeedLimits>(iiwa_name + "/configuration/setPTPJointLimits");
 
     ss_joint_vel_client =
-        nh.serviceClient<iiwa_msgs::SetSmartServoJointSpeedLimits>(
-            iiwa_name + "/configuration/setSmartServoLimits");
+        nh.serviceClient<iiwa_msgs::SetSmartServoJointSpeedLimits>(iiwa_name + "/configuration/setSmartServoLimits");
 
     ss_lin_vel_client =
-        nh.serviceClient<iiwa_msgs::SetSmartServoLinSpeedLimits>(
-            iiwa_name + "/configuration/setSmartServoLinLimits");
+        nh.serviceClient<iiwa_msgs::SetSmartServoLinSpeedLimits>(iiwa_name + "/configuration/setSmartServoLinLimits");
 
-    frames_client = nh.serviceClient<iiwa_msgs::GetFrames>(
-        iiwa_name + "/configuration/GetFrames");
+    frames_client = 
+        nh.serviceClient<iiwa_msgs::GetFrames>(iiwa_name + "/configuration/GetFrames");
 
-    joint_pos_client =
-        new actionlib::SimpleActionClient<iiwa_msgs::MoveToJointPositionAction>(
-            iiwa_name + "/action/move_to_joint_position");
+    joint_pos_client = new actionlib::SimpleActionClient<iiwa_msgs::MoveToJointPositionAction>(
+        iiwa_name + "/action/move_to_joint_position");
 
-    cartesian_pos_ptp_client =
-        new actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction>(
-            iiwa_name + "/action/move_to_cartesian_pose");
+    cartesian_pos_ptp_client = new actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction>(
+        iiwa_name + "/action/move_to_cartesian_pose");
 
-    cartesian_pos_lin_client =
-        new actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction>(
-            iiwa_name + "/action/move_to_cartesian_pose_lin");
+    cartesian_pos_lin_client = new actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction>(
+        iiwa_name + "/action/move_to_cartesian_pose_lin");
 
     cartesian_spline_client =
-        new actionlib::SimpleActionClient<iiwa_msgs::MoveAlongSplineAction>(
-            iiwa_name + "/action/move_along_spline");
+        new actionlib::SimpleActionClient<iiwa_msgs::MoveAlongSplineAction>(iiwa_name + "/action/move_along_spline");
 
-    joint_spline_pub = nh.advertise<iiwa_msgs::JointSpline>(
-        iiwa_name + "/command/JointSpline", 1);
+    joint_spline_pub = nh.advertise<iiwa_msgs::JointSpline>(iiwa_name + "/command/JointSpline", 1);
 
-    joint_ptp_droppable_pub = nh.advertise<iiwa_msgs::JointPosition>(
-        iiwa_name + "/command/JointPosition", 1);
+    joint_ptp_droppable_pub = nh.advertise<iiwa_msgs::JointPosition>(iiwa_name + "/command/JointPosition", 1);
 
-    cart_ptp_droppable_pub = nh.advertise<geometry_msgs::PoseStamped>(
-        iiwa_name + "/command/CartesianPose", 1);
+    cart_ptp_droppable_pub = nh.advertise<geometry_msgs::PoseStamped>(iiwa_name + "/command/CartesianPose", 1);
 
-    cart_lin_droppable_pub = nh.advertise<geometry_msgs::PoseStamped>(
-        iiwa_name + "/command/CartesianPoseLin", 1);
+    cart_lin_droppable_pub = nh.advertise<geometry_msgs::PoseStamped>(iiwa_name + "/command/CartesianPoseLin", 1);
 
     set_vel_acc();
     set_cart_traj_vel_acc();
   }
 
-  void fill_joint_spline_segements(
-      iiwa_msgs::JointSpline &spline_msg,
-      const std::vector<trajectory_msgs::JointTrajectoryPoint> &traj_vec) {
+  void fill_joint_spline_segements(iiwa_msgs::JointSpline &spline_msg,
+                                   const std::vector<trajectory_msgs::JointTrajectoryPoint> &traj_vec) {
     unsigned traj_size = traj_vec.size();
 
     ROS_INFO("spline size:  %u", traj_size);
@@ -358,8 +336,7 @@ class Kuka {
       iiwa_msgs::JointSplineSegment seg;
 
       seg.joint_angle.resize(traj_vec_iter->positions.size());
-      std::copy(traj_vec_iter->positions.begin(),
-                traj_vec_iter->positions.end(), seg.joint_angle.begin());
+      std::copy(traj_vec_iter->positions.begin(), traj_vec_iter->positions.end(), seg.joint_angle.begin());
 
       spline_msg.segments.emplace_back(seg);
       traj_vec_iter++;
@@ -405,20 +382,16 @@ class Kuka {
 
     std::vector<std::string> &frame_names = frame_msg.response.frame_name;
     std::vector<std::string> &abs_paths = frame_msg.response.parent_name;
-    std::vector<iiwa_msgs::JointQuantity> &joint_quantities =
-        frame_msg.response.joint_position;
-    std::vector<geometry_msgs::Pose> &cart_world_positions =
-        frame_msg.response.cart_world_position;
+    std::vector<iiwa_msgs::JointQuantity> &joint_quantities = frame_msg.response.joint_position;
+    std::vector<geometry_msgs::Pose> &cart_world_positions = frame_msg.response.cart_world_position;
 
     std::vector<Frame *> frames;
     for (int i = 0; i < frame_msg.response.frame_size; i++) {
       auto new_frame = new Frame(7);
       auto &jq = joint_quantities[i];
-      new_frame->set_joint_pos(
-          std::vector<double>{jq.a1, jq.a2, jq.a3, jq.a4, jq.a5, jq.a6, jq.a7});
+      new_frame->set_joint_pos(std::vector<double>{jq.a1, jq.a2, jq.a3, jq.a4, jq.a5, jq.a6, jq.a7});
 
-      new_frame->set_cart_pos(std::make_pair(
-          cart_world_positions[i], std::stoi(frame_msg.response.status[i])));
+      new_frame->set_cart_pos(std::make_pair(cart_world_positions[i], std::stoi(frame_msg.response.status[i])));
       frames.emplace_back(new_frame);
     }
 
@@ -435,10 +408,8 @@ class Kuka {
    * @param acc
    * @param override_acc
    */
-  bool set_vel_acc_drop(const double vel = 0.1, const double acc = 0.1,
-                        const double override_acc = 1.0) {
-    if (vel == m_joint_vel_drop && acc == m_joint_acc_drop &&
-        override_acc == m_joint_over_acc_drop) {
+  bool set_vel_acc_drop(const double vel = 0.1, const double acc = 0.1, const double override_acc = 1.0) {
+    if (vel == m_joint_vel_drop && acc == m_joint_acc_drop && override_acc == m_joint_over_acc_drop) {
       return true;
     } else {
       m_joint_vel_drop = vel;
@@ -456,10 +427,8 @@ class Kuka {
     ss_joint_vel_client.call(joint_vel_msg);
 
     if (m_print_info) {
-      std::cout << "set droppable Joint Velocity to " << vel << " --> "
-                << std::flush;
-      std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-                << std::endl;
+      std::cout << "set droppable Joint Velocity to " << vel << " --> " << std::flush;
+      std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED") << std::endl;
     }
 
     return joint_vel_msg.response.success;
@@ -476,10 +445,8 @@ class Kuka {
    * @return true when succeed
    * @return false when failed
    */
-  bool set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
-                            const double override_acc = 1.0) {
-    if (vel == m_ss_vel_lin_drop && acc == m_ss_acc_lin_drop &&
-        override_acc == m_ss_over_acc_lin_drop) {
+  bool set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1, const double override_acc = 1.0) {
+    if (vel == m_ss_vel_lin_drop && acc == m_ss_acc_lin_drop && override_acc == m_ss_over_acc_lin_drop) {
       return true;
     } else {
       m_ss_vel_lin_drop = vel;
@@ -496,10 +463,8 @@ class Kuka {
 
     ss_lin_vel_client.call(ss_lin_vel_msg);
     if (m_print_info) {
-      std::cout << "set droppable Lin Velocity to " << vel << " --> "
-                << std::flush;
-      std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-                << std::endl;
+      std::cout << "set droppable Lin Velocity to " << vel << " --> " << std::flush;
+      std::cout << (ss_lin_vel_msg.response.success ? "SUCCESSFUL" : "FAILED") << std::endl;
     }
     return ss_lin_vel_msg.response.success;
   }
@@ -528,8 +493,7 @@ class Kuka {
     joint_vel_client.call(joint_vel_msg);
     if (m_print_info) {
       std::cout << "set Joint Velocity to " << vel << " --> " << std::flush;
-      std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
-                << std::endl;
+      std::cout << (joint_vel_msg.response.success ? "SUCCESSFUL" : "FAILED") << std::endl;
     }
 
     return joint_vel_msg.response.success;
@@ -546,13 +510,10 @@ class Kuka {
    * @param maxCartesianJerk default = -1
    * @param maxOrientationJerk default = -1
    */
-  bool set_cart_traj_vel_acc(const double maxCartesianVelocity = 0.1,
-                             const double maxOrientationVelocity = 0.5,
-                             const double maxCartesianAcceleration = 0.2,
-                             const double maxOrientationAcceleration = 0.1,
-                             const double maxCartesianJerk = -1.0,
-                             const double maxOrientationJerk = -1.0) {
-    if (m_cart_pos_vel == maxCartesianVelocity &&
+  bool set_cart_traj_vel_acc(const double maxCartesianVelocity = 0.1, const double maxOrientationVelocity = 0.5,
+                             const double maxCartesianAcceleration = 0.2, const double maxOrientationAcceleration = 0.1,
+                             const double maxCartesianJerk = -1.0, const double maxOrientationJerk = -1.0) {
+    if (m_cart_pos_vel == maxCartesianVelocity && 
         m_cart_ori_vel == maxOrientationVelocity &&
         m_cart_pos_acc == maxCartesianAcceleration &&
         m_cart_ori_acc == maxOrientationAcceleration &&
@@ -574,19 +535,15 @@ class Kuka {
     cart_vel_msg.request.maxCartesianAcceleration = maxCartesianAcceleration;
     cart_vel_msg.request.maxCartesianJerk = maxCartesianJerk;
     cart_vel_msg.request.maxOrientationVelocity = maxOrientationVelocity;
-    cart_vel_msg.request.maxOrientationAcceleration =
-        maxOrientationAcceleration;
+    cart_vel_msg.request.maxOrientationAcceleration = maxOrientationAcceleration;
     cart_vel_msg.request.maxOrientationJerk = maxOrientationJerk;
 
     cart_spline_vel_client.call(cart_vel_msg);
 
     if (m_print_info)
-      std::cout << "set Cartesian PTP limits: \n(" << maxCartesianVelocity
-                << ", " << maxOrientationVelocity << ", "
-                << maxCartesianAcceleration << ", "
-                << maxOrientationAcceleration << ", " << maxCartesianJerk
-                << ", " << maxOrientationJerk << ") --> "
-                << (cart_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
+      std::cout << "set Cartesian PTP limits: \n(" << maxCartesianVelocity << ", " << maxOrientationVelocity << ", "
+                << maxCartesianAcceleration << ", " << maxOrientationAcceleration << ", " << maxCartesianJerk << ", "
+                << maxOrientationJerk << ") --> " << (cart_vel_msg.response.success ? "SUCCESSFUL" : "FAILED")
                 << std::endl;
     return cart_vel_msg.response.success;
   }
@@ -609,10 +566,8 @@ class Kuka {
    * @param vec
    * @param sleep_time default = 500 ms
    */
-  void move_joint_ptp(const std::vector<double> &vec,
-                      const double sleep_time = 500.0) {
-    move_joint_ptp(vec.at(0), vec.at(1), vec.at(2), vec.at(3), vec.at(4),
-                   vec.at(5), vec.at(6), sleep_time);
+  void move_joint_ptp(const std::vector<double> &vec, const double sleep_time = 500.0) {
+    move_joint_ptp(vec.at(0), vec.at(1), vec.at(2), vec.at(3), vec.at(4), vec.at(5), vec.at(6), sleep_time);
   }
 
   /**
@@ -622,9 +577,8 @@ class Kuka {
    * @param joint_positions j1 ~ j7
    * @param sleep_time default = 500 ms
    */
-  void move_joint_ptp(const double &j1, const double &j2, const double &j3,
-                      const double &j4, const double &j5, const double &j6,
-                      const double &j7, const double sleep_time = 500.0) {
+  void move_joint_ptp(const double &j1, const double &j2, const double &j3, const double &j4, const double &j5,
+                      const double &j6, const double &j7, const double sleep_time = 500.0) {
     static iiwa_msgs::MoveToJointPositionAction joint_pos_act;
     auto &joint_pos = joint_pos_act.action_goal.goal.joint_position;
     joint_pos.position.a1 = j1;
@@ -646,8 +600,7 @@ class Kuka {
    * @param vec
    */
   void move_joint_ptp_drop(const std::vector<double> &vec) {
-    move_joint_ptp_drop(vec.at(0), vec.at(1), vec.at(2), vec.at(3), vec.at(4),
-                        vec.at(5), vec.at(6));
+    move_joint_ptp_drop(vec.at(0), vec.at(1), vec.at(2), vec.at(3), vec.at(4), vec.at(5), vec.at(6));
   }
 
   /**
@@ -657,9 +610,8 @@ class Kuka {
    *
    * @param joint_positions j1 ~ j7
    */
-  void move_joint_ptp_drop(const double &j1, const double &j2, const double &j3,
-                           const double &j4, const double &j5, const double &j6,
-                           const double &j7) {
+  void move_joint_ptp_drop(const double &j1, const double &j2, const double &j3, const double &j4, const double &j5,
+                           const double &j6, const double &j7) {
     static iiwa_msgs::JointPosition joint_pos;
     joint_pos.position.a1 = j1;
     joint_pos.position.a2 = j2;
@@ -691,11 +643,9 @@ class Kuka {
    * @param status
    * @param sleep_time default = 500 ms
    */
-  void move_cart_ptp(const geometry_msgs::Pose &pose,
-                     const int status = UNDEFINED_STATUS,
+  void move_cart_ptp(const geometry_msgs::Pose &pose, const int status = UNDEFINED_STATUS,
                      const double sleep_time = 500.0) {
-    cartesian_pos_ptp_client->sendGoal(
-        build_cart_act(pose, status).action_goal.goal);
+    cartesian_pos_ptp_client->sendGoal(build_cart_act(pose, status).action_goal.goal);
     ros::Duration(sleep_time * 1e-3).sleep();
   }
 
@@ -707,9 +657,8 @@ class Kuka {
    * @param status
    * @param sleep_time default = 500 ms
    */
-  void move_cart_ptp(const double &posX, const double &posY, const double &posZ,
-                     const double &oriW, const double &oriX, const double &oriY,
-                     const double &oriZ, const int status = UNDEFINED_STATUS,
+  void move_cart_ptp(const double &posX, const double &posY, const double &posZ, const double &oriW, const double &oriX,
+                     const double &oriY, const double &oriZ, const int status = UNDEFINED_STATUS,
                      const double sleep_time = 500.0) {
     static geometry_msgs::Pose pose;
     pose.position.x = posX;
@@ -748,10 +697,8 @@ class Kuka {
    * @param pose cartesian position X Y Z w x y z
    * @param sleep_time default = 500 ms
    */
-  void move_cart_ptp_drop(const double &posX, const double &posY,
-                          const double &posZ, const double &oriW,
-                          const double &oriX, const double &oriY,
-                          const double &oriZ) {
+  void move_cart_ptp_drop(const double &posX, const double &posY, const double &posZ, const double &oriW,
+                          const double &oriX, const double &oriY, const double &oriZ) {
     static geometry_msgs::Pose pose;
     pose.position.x = posX;
     pose.position.y = posY;
@@ -771,11 +718,8 @@ class Kuka {
    * @param status
    * @param sleep_time default = 500 ms
    */
-  void move_cart_lin(geometry_msgs::Pose &pose,
-                     const int status = UNDEFINED_STATUS,
-                     const double sleep_time = 500.0) {
-    cartesian_pos_lin_client->sendGoal(
-        build_cart_act(pose, status).action_goal.goal);
+  void move_cart_lin(geometry_msgs::Pose &pose, const int status = UNDEFINED_STATUS, const double sleep_time = 500.0) {
+    cartesian_pos_lin_client->sendGoal(build_cart_act(pose, status).action_goal.goal);
 
     ros::Duration(sleep_time * 1e-3).sleep();
   }
@@ -787,9 +731,8 @@ class Kuka {
    * @param status
    * @param sleep_time default = 500 ms
    */
-  void move_cart_lin(const double &posX, const double &posY, const double &posZ,
-                     const double &oriW, const double &oriX, const double &oriY,
-                     const double &oriZ, const int status = UNDEFINED_STATUS,
+  void move_cart_lin(const double &posX, const double &posY, const double &posZ, const double &oriW, const double &oriX,
+                     const double &oriY, const double &oriZ, const int status = UNDEFINED_STATUS,
                      const double sleep_time = 500.0) {
     static geometry_msgs::Pose pose;
     pose.position.x = posX;
@@ -822,14 +765,13 @@ class Kuka {
 
   /**
    * @brief Move robot along a trajectory in cartesian space, use
-   * set_cart_traj_vel_acc() and set_vel_acc_drop () before this 
+   * set_cart_traj_vel_acc() and set_vel_acc_drop () before this
    * method to set speed
    *
    * @param trajectory
    * @param status status of start point, default = -1
    */
-  void exe_cart_traj(const std::vector<geometry_msgs::Pose> &trajectory,
-                     const std::vector<int> &status) {
+  void exe_cart_traj(const std::vector<geometry_msgs::Pose> &trajectory, const std::vector<int> &status) {
     if (trajectory.size() != status.size()) {
       std::cout << "Failed to execute cartesian trajectory, size of trajectory "
                    "and status should be same!"
@@ -862,8 +804,7 @@ class Kuka {
     }
 
     if (m_print_info)
-      std::cout << "cartesian trajectory size: " << trajectory.size()
-                << std::endl;
+      std::cout << "cartesian trajectory size: " << trajectory.size() << std::endl;
 
     move_cart_ptp(trajectory[0], status[0]);
 
@@ -879,15 +820,12 @@ class Kuka {
    * @param stiff stiffness on X, Y, Z, default = 2000
    * @param damp damping on X, Y, Z, default = 0.7
    */
-  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                      const float velocity = 0.1, const float stiffX = 2000,
-                      const float stiffY = 2000, const float stiffZ = 2000,
-                      const float dampX = 0.7, const float dampY = 0.7,
-                      const float dampZ = 0.7) {
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory, const float velocity = 0.1,
+                      const float stiffX = 2000, const float stiffY = 2000, const float stiffZ = 2000,
+                      const float dampX = 0.7, const float dampY = 0.7, const float dampZ = 0.7) {
     std::vector<float> stiff{stiffX, stiffY, stiffZ};
     std::vector<float> damp{dampX, dampY, dampZ};
-    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp,
-                   CARTESIAN_IMPEDANCE_MODE);
+    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp, CARTESIAN_IMPEDANCE_MODE);
   }
 
   /**
@@ -899,13 +837,10 @@ class Kuka {
    * @param stiff stiffness on 7 joints
    * @param damp damping on 7 joints
    */
-  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                      const double velocity, const std::vector<double> &stiff,
-                      const std::vector<double> &damp) {
-    exe_joint_traj(trajectory.joint_trajectory.points, velocity,
-                   std::vector<float>(stiff.begin(), stiff.end()),
-                   std::vector<float>(damp.begin(), damp.end()),
-                   JOINT_IMPEDANCE_MODE);
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory, const double velocity,
+                      const std::vector<double> &stiff, const std::vector<double> &damp) {
+    exe_joint_traj(trajectory.joint_trajectory.points, velocity, std::vector<float>(stiff.begin(), stiff.end()),
+                   std::vector<float>(damp.begin(), damp.end()), JOINT_IMPEDANCE_MODE);
   }
 
   /**
@@ -917,11 +852,9 @@ class Kuka {
    * @param stiff stiffness on 7 joints
    * @param damp damping on 7 joints
    */
-  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                      const float velocity, std::vector<float> &&stiff,
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory, const float velocity, std::vector<float> &&stiff,
                       std::vector<float> &&damp) {
-    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp,
-                   JOINT_IMPEDANCE_MODE);
+    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp, JOINT_IMPEDANCE_MODE);
   }
 
   /**
@@ -933,46 +866,38 @@ class Kuka {
    * @param stiff stiffness on 7 joints
    * @param damp damping on 7 joints
    */
-  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory,
-                      const float velocity, const std::vector<float> &stiff,
-                      const std::vector<float> &damp) {
-    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp,
-                   JOINT_IMPEDANCE_MODE);
+  void exe_joint_traj(const moveit_msgs::RobotTrajectory &trajectory, const float velocity,
+                      const std::vector<float> &stiff, const std::vector<float> &damp) {
+    exe_joint_traj(trajectory.joint_trajectory.points, velocity, stiff, damp, JOINT_IMPEDANCE_MODE);
   }
 
   /**
    * @brief Move robot along a trajectory in joint space
-   * 
-   * @param trajectory 
+   *
+   * @param trajectory
    * @param velocity joint relative speed, default = 0.1
-   * @param stiff stiffness, size = 3 (cartesian impedance) or 7 (joint impedance) 
-   * @param damp damping, size = 3 (cartesian impedance) or 7 (joint impedance) 
+   * @param stiff stiffness, size = 3 (cartesian impedance) or 7 (joint impedance)
+   * @param damp damping, size = 3 (cartesian impedance) or 7 (joint impedance)
    * @param mode 2: cartesian impedence  1: joint impedence  0: position control
    */
-  void exe_joint_traj(
-      const std::vector<trajectory_msgs::JointTrajectoryPoint> &trajectory,
-      const float velocity, const std::vector<float> &stiff,
-      const std::vector<float> &damp,
-      JOINT_SPLINE_MODE mode = JOINT_SPLINE_MODE::POSITION_CONTROL_MODE) {
+  void exe_joint_traj(const std::vector<trajectory_msgs::JointTrajectoryPoint> &trajectory, const float velocity,
+                      const std::vector<float> &stiff, const std::vector<float> &damp,
+                      JOINT_SPLINE_MODE mode = JOINT_SPLINE_MODE::POSITION_CONTROL_MODE) {
     iiwa_msgs::JointSpline spline_msg;
 
     switch (mode) {
       case JOINT_SPLINE_MODE::CARTESIAN_IMPEDANCE_MODE:
         spline_msg.cartesian_stiffness.resize(3);
         spline_msg.cartesian_damping.resize(3);
-        std::copy(stiff.begin(), stiff.begin() + 3,
-                  spline_msg.cartesian_stiffness.begin());
-        std::copy(damp.begin(), damp.begin() + 3,
-                  spline_msg.cartesian_damping.begin());
+        std::copy(stiff.begin(), stiff.begin() + 3, spline_msg.cartesian_stiffness.begin());
+        std::copy(damp.begin(), damp.begin() + 3, spline_msg.cartesian_damping.begin());
         break;
 
       case JOINT_SPLINE_MODE::JOINT_IMPEDANCE_MODE:
         spline_msg.joint_stiffness.resize(7);
         spline_msg.joint_damping.resize(7);
-        std::copy(stiff.begin(), stiff.begin() + 7,
-                  spline_msg.joint_stiffness.begin());
-        std::copy(damp.begin(), damp.begin() + 7,
-                  spline_msg.joint_damping.begin());
+        std::copy(stiff.begin(), stiff.begin() + 7, spline_msg.joint_stiffness.begin());
+        std::copy(damp.begin(), damp.begin() + 7, spline_msg.joint_damping.begin());
         break;
 
       case JOINT_SPLINE_MODE::POSITION_CONTROL_MODE:
@@ -980,8 +905,7 @@ class Kuka {
         break;
 
       default:
-        ROS_ERROR("Wrong joint spline control mode, requires 0 ~ 2, gets: %d",
-                  (int)mode);
+        ROS_ERROR("Wrong joint spline control mode, requires 0 ~ 2, gets: %d", (int)mode);
         ROS_ERROR("Joint spline aborted.");
         return;
         break;
