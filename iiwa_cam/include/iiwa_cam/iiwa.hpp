@@ -118,7 +118,7 @@ class Kuka {
 
    private:
     ros::ServiceClient ee_recorder_client;
-    ros::ServiceClient ee_state_client;
+    ros::ServiceClient ee_pose_client;
     std::string name;
 
     std::atomic<bool> watchdog_state;
