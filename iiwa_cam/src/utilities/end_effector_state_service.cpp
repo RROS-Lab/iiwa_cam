@@ -145,9 +145,9 @@ class KukaRecorder {
   std::ofstream cart_pos_stream;
   std::ofstream wrench_stream;
 
-  geometry_msgs::Pose cart_pose;      // protected by mtx
-  geometry_msgs::Pose cart_velocity;  // protected by mtx
-  int status;                         // protected by mtx
+  geometry_msgs::Pose cart_pose;       // protected by mtx
+  geometry_msgs::Twist cart_velocity;  // protected by mtx
+  int status;                          // protected by mtx
   ros::Time timestamp;
 
   // protected by wrench_mtx, max size = WRENCH_HIS_QUEUE_SIZE
@@ -226,13 +226,26 @@ class KukaRecorder {
 
         double delta_time = (msg.poseStamped.header.stamp - timestamp).toSec();
         const geometry_msgs::Pose &msg_pose = msg.poseStamped.pose;
-        cart_velocity.position.x = (msg_pose.position.x - cart_pose.position.x) / delta_time;
-        cart_velocity.position.y = (msg_pose.position.y - cart_pose.position.y) / delta_time;
-        cart_velocity.position.z = (msg_pose.position.z - cart_pose.position.z) / delta_time;
-        cart_velocity.orientation.w = (msg_pose.orientation.w - cart_pose.orientation.w) / delta_time;
-        cart_velocity.orientation.x = (msg_pose.orientation.x - cart_pose.orientation.x) / delta_time;
-        cart_velocity.orientation.y = (msg_pose.orientation.y - cart_pose.orientation.y) / delta_time;
-        cart_velocity.orientation.z = (msg_pose.orientation.z - cart_pose.orientation.z) / delta_time;
+        cart_velocity.linear.x = (msg_pose.position.x - cart_pose.position.x) / delta_time;
+        cart_velocity.linear.y = (msg_pose.position.y - cart_pose.position.y) / delta_time;
+        cart_velocity.linear.z = (msg_pose.position.z - cart_pose.position.z) / delta_time;
+
+        double p0 = (msg_pose.orientation.w - cart_pose.orientation.w) / delta_time;
+        double p1 = (msg_pose.orientation.x - cart_pose.orientation.x) / delta_time;
+        double p2 = (msg_pose.orientation.y - cart_pose.orientation.y) / delta_time;
+        double p3 = (msg_pose.orientation.z - cart_pose.orientation.z) / delta_time;
+
+        double q0 = cart_pose.orientation.w;
+        double q1 = cart_pose.orientation.x;
+        double q2 = cart_pose.orientation.y;
+        double q3 = cart_pose.orientation.z;
+
+        cart_velocity.angular.x = -q1 * p0 + q0 * p1 - q3 * p2 + q2 * p3;
+        cart_velocity.angular.y = -q2 * p0 + q3 * p1 + q0 * p2 - q1 * p3;
+        cart_velocity.angular.z = -q3 * p0 - q2 * p1 + q1 * p2 + q0 * p3;
+
+        double velocity_error = q0 * p0 + q1 * p1 + q2 * p2 + q3 * p3;
+        printf("computation error: %E", velocity_error);
       }
 
       cart_pose = msg.poseStamped.pose;
@@ -310,8 +323,7 @@ class KukaRecorder {
    */
   void fill_response(iiwa_cam::EndEffectorState::Response &res) {
     res.pose = cart_pose;
-    // TODO: use jacobian matrix to calculate the cartesian velocity
-    // res.velocity = cart_velocity;
+    res.velocity = cart_velocity;
     res.status = status;
     res.stamp = timestamp;
 
