@@ -240,12 +240,14 @@ class KukaRecorder {
         double q2 = cart_pose.orientation.y;
         double q3 = cart_pose.orientation.z;
 
-        cart_velocity.angular.x = -q1 * p0 + q0 * p1 - q3 * p2 + q2 * p3;
-        cart_velocity.angular.y = -q2 * p0 + q3 * p1 + q0 * p2 - q1 * p3;
-        cart_velocity.angular.z = -q3 * p0 - q2 * p1 + q1 * p2 + q0 * p3;
+        cart_velocity.angular.x = (-q1 * p0 + q0 * p1 - q3 * p2 + q2 * p3) * 2;
+        cart_velocity.angular.y = (-q2 * p0 + q3 * p1 + q0 * p2 - q1 * p3) * 2;
+        cart_velocity.angular.z = (-q3 * p0 - q2 * p1 + q1 * p2 + q0 * p3) * 2;
 
         double velocity_error = q0 * p0 + q1 * p1 + q2 * p2 + q3 * p3;
-        printf("computation error: %E", velocity_error);
+        if (abs(velocity_error) > 1e-2)
+          printf("Angular velocity computation error: %E has exceed limit, need to reduce sample time\n",
+                 velocity_error);
       }
 
       cart_pose = msg.poseStamped.pose;
@@ -284,7 +286,7 @@ class KukaRecorder {
 
     std::string robot_ns = "/" + robot_name;
 
-    wrench_sub = nh.subscribe(robot_ns + "/state/CartesianPose", 20, &KukaRecorder::wrench_callback, this);
+    wrench_sub = nh.subscribe(robot_ns + "/state/CartesianWrench", 20, &KukaRecorder::wrench_callback, this);
 
     cart_pos_sub = nh.subscribe(robot_ns + "/state/CartesianPose", 20, &KukaRecorder::cart_pos_callback, this);
 
