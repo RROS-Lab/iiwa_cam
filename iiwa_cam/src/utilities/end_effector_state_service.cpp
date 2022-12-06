@@ -555,7 +555,7 @@ int main(int argc, char *argv[]) {
 
   ros::spin();
 
-  std::cout << "\nShut down Kuka Path Recorder" << std::endl;
+  std::cout << "\nShut down Kuka End Effector State Service" << std::endl;
   // do cleaning
 
   ros::shutdown();

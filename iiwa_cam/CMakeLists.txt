@@ -195,10 +195,15 @@ add_executable(moveit_rviz_state_receiver_service
   src/utilities/moveit_rviz_state_receiver_service.cpp
 )
 
+add_executable(python_control_service
+  src/utilities/python_control_service.cpp
+)
+
 # unit test files
 add_executable(unit_test 
   src/test/unit_test.cpp
 )
+
 
 # get frame files
 # add_executable(tester 
@@ -259,6 +264,10 @@ add_dependencies(moveit_rviz_state_receiver_service
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
+add_dependencies(python_control_service
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
 add_dependencies(unit_test
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
@@ -310,6 +319,9 @@ target_link_libraries(moveit_rviz_state_receiver_service
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(python_control_service
+  ${catkin_LIBRARIES}
+)
 
 # unit test files
 target_link_libraries(unit_test

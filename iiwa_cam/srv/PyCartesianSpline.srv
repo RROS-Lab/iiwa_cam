@@ -1,0 +1,6 @@
+# execute cartesian trajectory
+geometry_msgs/Pose[] trajectory
+# the size of status array should be same as size of trajectory
+int32[] status
+---
+bool success
