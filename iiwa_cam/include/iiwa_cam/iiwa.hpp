@@ -319,6 +319,8 @@ class Kuka {
     cart_lin_droppable_pub = nh.advertise<geometry_msgs::PoseStamped>(iiwa_name + "/command/CartesianPoseLin", 1);
 
     set_vel_acc();
+    set_vel_acc_drop();
+    set_vel_acc_lin_drop();
     set_cart_traj_vel_acc();
   }
 

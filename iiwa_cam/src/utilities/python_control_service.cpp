@@ -41,6 +41,8 @@ int main(int argc, char **argv) {
   std::string name = (argc >= 2) ? argv[1] : "iiwa";
 
   kuka = new cam::Kuka(name);
+  kuka->set_vel_acc_lin_drop(0.1);
+  kuka->set_vel_acc_drop(0.2,0.1);
 
   ros::ServiceServer cart_ptp_drop_srv = nh.advertiseService("/cam/iiwa/command/CartesianPose", cart_ptp_drop_cb);
   ros::ServiceServer cart_spline_srv = nh.advertiseService("/cam/iiwa/command/CartesianSpline", cart_spline_cb);
