@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #ROS Imports
 import rospy
@@ -71,6 +71,15 @@ class Robot:
             robot_state_dict["pose"]["position"]["z"], 
             roll_x, pitch_y, yaw_z]
 
+        robot_state_dict["vel"] =[
+            robot_state_dict["velocity"]["linear"]['x'],
+            robot_state_dict["velocity"]["linear"]['y'],
+            robot_state_dict["velocity"]["linear"]['z'],
+            robot_state_dict["velocity"]["angular"]['x'],
+            robot_state_dict["velocity"]["angular"]['y'],
+            robot_state_dict["velocity"]["angular"]['z'],
+        ]
+
         # calculate average force data
         force_x, force_y, force_z, torque_x, torque_y, torque_z = 0., 0., 0., 0., 0., 0.
         for wrench in robot_state_dict["wrenches"]:
@@ -80,7 +89,7 @@ class Robot:
             torque_x += wrench["torque"]["x"]
             torque_y += wrench["torque"]["y"]
             torque_z += wrench["torque"]["z"]
-                
+        
         force_x /= self.FORCE_WINDOW_SIZE
         force_y /= self.FORCE_WINDOW_SIZE
         force_z /= self.FORCE_WINDOW_SIZE
@@ -91,12 +100,17 @@ class Robot:
         # update res (end effector state) 
         del robot_state_dict['success']
         del robot_state_dict['error']
+        del robot_state_dict["velocity"]
         del robot_state_dict["wrenches"]
         
         robot_state_dict["wrench"] = [force_x, force_y, force_z, torque_x, torque_y, torque_z]
             
-        # write res (end effector state) into a dict 
-        self.state_data[count] = ee_cart_pose = robot_state_dict["pose"] [:3]
+        # write res (end effector state) into a dict
+        ee_cart_state = [robot_state_dict["stamp"]["secs"]*1000 + int(robot_state_dict["stamp"]["nsecs"] / 1000000)]
+        ee_cart_state.extend(robot_state_dict["pose"])
+        ee_cart_state.extend(robot_state_dict["vel"])
+        ee_cart_state.extend(robot_state_dict["wrench"])
+        self.state_data[count] = ee_cart_state
         # print(ee_cart_pose)
         
         return robot_state_dict
@@ -147,7 +161,7 @@ class Kuka(Robot):
         cartPose.linearMotion = linearMotion
         
         time.sleep(sleep_time * 1e-3)
-        self.cartesian_drop_client(cartPose)
+        self.cartesian_drop_client(pose, linearMotion)
 
 
 
@@ -156,16 +170,47 @@ class Kuka(Robot):
 def main(args=None):
     rospy.init_node('test_python_robot_class')
     
+    kuka = Kuka("iiwa")
+
     
+    print(kuka.get_ee_state(1))
+    kuka.get_ee_state(2)
+    kuka.get_ee_state(3)
+    print(kuka.state_data)
+
+
+
+    pose = Pose()
+    pose.position.x = 0.5
+    pose.position.z = 0.5
+    pose.orientation.y = 1
+
+    # kuka.move_cartesian_drop(pose)
     
-    
-    
+    poseArr = []
+    statusArr = []
+    r = 0.1
+    theta = 0
+    while theta < 2 * 3.14:
+        p = Pose()
+        p.position.x = 0.5 + r * math.cos(theta)
+        p.position.y = r * math.sin(theta)
+        p.position.z = 0.5
+        p.orientation.y = 1.0
+        poseArr.append(p)
+        statusArr.append(2)
+        theta += 0.01
+
+    # kuka.cartesian_spline_client(poseArr, statusArr)
+    # import json
+    # json.dumps()
     
     rospy.spin()
 
 
 if __name__ == '__main__':
     main()
+    print()
 
 
 
