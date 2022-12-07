@@ -2,41 +2,74 @@
 
 #ROS Imports
 import rospy
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import Twist, Pose
 from rospy_message_converter import message_converter as mc
-import actionlib
 import time
+import math
 
 
 from iiwa_msgs.msg import MoveToCartesianPoseAction, MoveToJointPositionAction
 from iiwa_msgs.msg import MoveAlongSplineAction
 from iiwa_msgs.srv import SetPTPJointSpeedLimits
 from iiwa_msgs.srv import SetSmartServoLinSpeedLimits
-from iiwa_cam.srv import EndEffectorWrench
+
+from iiwa_cam.srv import EndEffectorState
+from iiwa_cam.srv import PyCartesianPose
+from iiwa_cam.srv import PyCartesianSpline
+
 from iiwa_msgs.msg import Spline, SplineSegment
 from iiwa_msgs.msg import MoveToJointPositionActionGoal
 
-
+def euler_from_quaternion(w, x, y, z):
+    """
+    Convert a quaternion into euler angles (roll, pitch, yaw)
+    roll is rotation around x in radians (counterclockwise)
+    pitch is rotation around y in radians (counterclockwise)
+    yaw is rotation around z in radians (counterclockwise)
+    """
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + y * y)
+    roll_x = math.atan2(t0, t1)
+    
+    t2 = +2.0 * (w * y - z * x)
+    t2 = +1.0 if t2 > +1.0 else t2
+    t2 = -1.0 if t2 < -1.0 else t2
+    pitch_y = math.asin(t2)
+    
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (y * y + z * z)
+    yaw_z = math.atan2(t3, t4)
+    
+    return roll_x, pitch_y, yaw_z # in radians
 
 ##Generic Robot Class Implementation
 class Robot:
     def __init__(self, robot_name):
         self.robot_name = robot_name
         
-        self.cart_state_client = rospy.ServiceProxy("/cam/"+self.robot_name+"/EndEffectorWrench", EndEffectorWrench)
-        self.FORCE_WINDOW_SIZE = 30
+        self.cart_state_client = rospy.ServiceProxy("/cam/"+self.robot_name+"/EndEffectorState", EndEffectorState)
+        self.FORCE_WINDOW_SIZE = 10
         self.state_data = {}
     
-    def get_ee_state(self, count, z_height_threshold):
+    def get_ee_state(self, count):
         robot_state_dict = mc.convert_ros_message_to_dictionary(self.cart_state_client("iiwa"))
             
-        if (robot_state_dict["pose"]["position"]["z"] < z_height_threshold - 0.002):
-            robot_state_dict["label"] = 1.
-        else: 
-            robot_state_dict["label"] = 0.
+        # if (robot_state_dict["pose"]["position"]["z"] < z_height_threshold - 0.002):
+        #     robot_state_dict["label"] = 1.
+        # else: 
+        #     robot_state_dict["label"] = 0.
+        
+        roll_x, pitch_y, yaw_z = euler_from_quaternion(
+                                    robot_state_dict["pose"]["orientation"]["w"], 
+                                    robot_state_dict["pose"]["orientation"]["x"], 
+                                    robot_state_dict["pose"]["orientation"]["y"], 
+                                    robot_state_dict["pose"]["orientation"]["z"])
             
-        robot_state_dict["pose"] = [robot_state_dict["pose"]["position"]["x"], robot_state_dict["pose"]["position"]["y"], robot_state_dict["pose"]["position"]["z"], 
-                       robot_state_dict["pose"]["orientation"]["w"], robot_state_dict["pose"]["orientation"]["x"], robot_state_dict["pose"]["orientation"]["y"], robot_state_dict["pose"]["orientation"]["z"]]
+        robot_state_dict["pose"] = [
+            robot_state_dict["pose"]["position"]["x"], 
+            robot_state_dict["pose"]["position"]["y"], 
+            robot_state_dict["pose"]["position"]["z"], 
+            roll_x, pitch_y, yaw_z]
 
         # calculate average force data
         force_x, force_y, force_z, torque_x, torque_y, torque_z = 0., 0., 0., 0., 0., 0.
@@ -59,33 +92,20 @@ class Robot:
         del robot_state_dict['success']
         del robot_state_dict['error']
         del robot_state_dict["wrenches"]
+        
         robot_state_dict["wrench"] = [force_x, force_y, force_z, torque_x, torque_y, torque_z]
             
         # write res (end effector state) into a dict 
         self.state_data[count] = ee_cart_pose = robot_state_dict["pose"] [:3]
         # print(ee_cart_pose)
         
-        return ee_cart_pose
+        return robot_state_dict
     
 
 #####KUKA Class#######
 class Kuka(Robot):
     def __init__(self, robot_name):
         super().__init__(robot_name)
-        # rospy.init_node('random_explorer_node')
-        self.ptp_cart_client = actionlib.SimpleActionClient('/' + robot_name +
-                                       '/action/move_to_cartesian_pose',
-                                       MoveToCartesianPoseAction)
-
-        self.ptp_joint_client = actionlib.SimpleActionClient('/' + robot_name +
-                                       '/action/move_to_joint_position',
-                                       MoveToJointPositionAction)
-
-        self.lin_client = actionlib.SimpleActionClient('/' + robot_name +
-                                       '/action/move_to_cartesian_pose_lin',
-                                       MoveToCartesianPoseAction)
-
-        self.lin_pub = rospy.Publisher('/' + robot_name + "/action/move_to_cartesian_pose_lin/goal", MoveToJointPositionActionGoal, queue_size = 2)
 
         self.joint_vel_client = rospy.ServiceProxy('/' + robot_name +
                                        '/configuration/setPTPJointLimits',
@@ -93,11 +113,9 @@ class Kuka(Robot):
         self.joint_drop_vel_client = rospy.ServiceProxy('/' + robot_name +
                                     '/configuration/setSmartServoLinLimits',
                                     SetSmartServoLinSpeedLimits)
-        
-        self.cart_spline_client = actionlib.SimpleActionClient('/' + robot_name +
-                                        '/action/move_along_spline', MoveAlongSplineAction)
 
-        self.lin_drop_pub = rospy.Publisher('/' + robot_name + "/command/CartesianPoseLin", PoseStamped, queue_size = 2)
+        self.cartesian_drop_client = rospy.ServiceProxy('/cam/' + robot_name + "/command/CartesianPose", PyCartesianPose)
+        self.cartesian_spline_client = rospy.ServiceProxy('/cam/' + robot_name + "/command/CartesianSpline", PyCartesianSpline)
 
     def set_vel_acc(self, vel, acc):
         if(self.joint_vel_client(vel, acc) == False):
@@ -112,120 +130,42 @@ class Kuka(Robot):
             print("failed to change robot's joint velocity and accelaration")
         
 
-    def build_cart_act(self, posX, posY, posZ, oriW, oriX, oriY, oriZ, status , sleep_time):
+    def move_cartesian_spline(self, pose_array, status_array):
         
-        cart_pose_act = MoveToCartesianPoseAction()
-        cart_pose_act.action_goal.goal.cartesian_pose.redundancy.status =status
-
-        poseStamped = PoseStamped()
-        poseStamped.header.frame_id = self.robot_name + "_link_0"
-        poseStamped.pose.position.x = posX
-        poseStamped.pose.position.y = posY
-        poseStamped.pose.position.z = posZ
-        poseStamped.pose.orientation.w = oriW
-        poseStamped.pose.orientation.x = oriX
-        poseStamped.pose.orientation.y = oriY
-        poseStamped.pose.orientation.z = oriZ
-
-        cart_pose_act.action_goal.goal.cartesian_pose.poseStamped = poseStamped
-
-        return cart_pose_act
-
-    def move_robot_ptp(self, goal_pose, sleep_time=600.0):
+        cartSpline = PyCartesianSpline()
+        assert len(pose_array) == len(status_array)
+        cartSpline.trajectory = pose_array
+        cartSpline.status = status_array
         
-        print("Moving the robot to: ", goal_pose)
-        self.lin_drop_pub.publish(goal_pose)
+        self.cartesian_spline_client(cartSpline)
+        
+        
+
+    def move_cartesian_drop(self, pose, linearMotion = False, sleep_time = 300.0):
+        cartPose = PyCartesianPose()
+        cartPose.pose = pose
+        cartPose.linearMotion = linearMotion
         
         time.sleep(sleep_time * 1e-3)
-        return
+        self.cartesian_drop_client(cartPose)
 
-    def move_robot_ptp_cart_action(self, goal_pose_stamped, status=2, sleep_time = 600.0):
-        print("Waiting for PTP action server")
-        self.ptp_cart_client.wait_for_server()
-        cart_pose_act = MoveToCartesianPoseAction()
-        cart_pose_act.action_goal.goal.cartesian_pose.redundancy.status = status
-        cart_pose_act.action_goal.header.frame_id = self.robot_name + "_link_0"
-        
-        cart_pose_act.action_goal.goal.cartesian_pose.poseStamped.header = goal_pose_stamped.header
-        cart_pose_act.action_goal.goal.cartesian_pose.poseStamped.pose = goal_pose_stamped.pose
-        
-        self.ptp_cart_client.send_goal(cart_pose_act.action_goal.goal)
-        time.sleep(sleep_time * 1e-2)
-        self.ptp_cart_client.wait_for_result()
-        result = self.ptp_cart_client.get_result()
-        print(result)
-        print("Sent cartesian goal")
-        return
 
-    def move_robot_ptp_joint_action(self, joint_angles, status=2, sleep_time = 600.0):
-        print("Waiting for PTP Joint Position action server")
-        self.ptp_joint_client.wait_for_server()
-        joint_pose = MoveToJointPositionAction()
-        joint_pose.action_goal.goal.joint_position.header.frame_id = self.robot_name + "_link_0"
-        joint_pose.action_goal.goal.joint_position.position.a1 = joint_angles[0]
-        joint_pose.action_goal.goal.joint_position.position.a2 = joint_angles[1]
-        joint_pose.action_goal.goal.joint_position.position.a3 = joint_angles[2]
-        joint_pose.action_goal.goal.joint_position.position.a4 = joint_angles[3]
-        joint_pose.action_goal.goal.joint_position.position.a5 = joint_angles[4]
-        joint_pose.action_goal.goal.joint_position.position.a6 = joint_angles[5]
-        joint_pose.action_goal.goal.joint_position.position.a7 = joint_angles[6]
-        
-        
-        self.ptp_joint_client.send_goal(joint_pose.action_goal.goal)
-        time.sleep(sleep_time * 1e-3)
-        self.ptp_joint_client.wait_for_result()
-        result = self.ptp_joint_client.get_result()
-        print(result)
-        print("Sent Joint Position Goal")
-        return
 
-    def move_robot_cart_spline(self, posestamped_array, sleep_time = 600.0):
-        print("Waiting for the ros spline execution client")
-        self.cart_spline_client.wait_for_server()
-        # spline_traj = Spline()
 
-        #Define the Spline segment here
-        current_spline_segment = SplineSegment()
-        goal = MoveAlongSplineAction()
-        goal.action_goal.header.frame_id = self.robot_name + "_link_0"
-        # goal.action_goal.goal.spline.segments = spline_traj.segments
-        for trajectory in posestamped_array:
-            current_spline_segment.type = current_spline_segment.SPL
-            current_spline_segment.point.redundancy.status = 2
-            current_spline_segment.point.poseStamped = trajectory
-            goal.action_goal.goal.spline.segments.append(current_spline_segment)
-        
-        
-        self.cart_spline_client.send_goal(goal.action_goal.goal)
-        time.sleep(sleep_time * 1e-3)
-        self.cart_spline_client.wait_for_result()
-        
-        result = self.cart_spline_client.get_result()
-        if(result.success):
-            print("Successfully completed spline segment execution")
-        else:
-            print("Could not execute the spline motion due to: ", result.error)
 
-        return
+def main(args=None):
+    rospy.init_node('test_python_robot_class')
+    
+    
+    
+    
+    
+    
+    rospy.spin()
 
-    def move_cart_lin_drop(self, posX, posY, posZ, oriW, oriX, oriY, oriZ, status = 2, sleep_time = 600.0):
-        
-        poseStamped = PoseStamped()
-        poseStamped.header.frame_id = self.robot_name+"_link_0"
 
-        poseStamped.pose.position.x = posX
-        poseStamped.pose.position.y = posY
-        poseStamped.pose.position.z = posZ
-        poseStamped.pose.orientation.w = oriW
-        poseStamped.pose.orientation.x = oriX
-        poseStamped.pose.orientation.y = oriY
-        poseStamped.pose.orientation.z = oriZ
-        
-        self.lin_drop_pub.publish(poseStamped)
-        time.sleep(sleep_time * 1e-3)
+if __name__ == '__main__':
+    main()
 
-    def move_cart_ptp(self, posX, posY, posZ, oriW, oriX, oriY, oriZ, status = 2, sleep_time = 600.0):
-        cart_pose_act = self.build_cart_act(posX, posY, posZ, oriW, oriX, oriY, oriZ, status , sleep_time)
-        self.ptp_cart_client.send_goal(cart_pose_act.action_goal.goal)
-        time.sleep(sleep_time * 1e-3)
+
 
