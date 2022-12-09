@@ -5,7 +5,8 @@
 ## Content
 - [MoveIt! - RViz Support Services](#moveit---rviz-support-services)
 - [End Effector State Services ](#end-effector-state-services)
-    - [Current Cartesian Position](#end-effector-current-cartesian-position-inquiry)
+    - [Current Cartesian Pose](#end-effector-current-cartesian-pose-inquiry)
+    - [Current Cartesian State](#end-effector-current-cartesian-state-inquiry)
     - [Path Recording](#end-effector-path-recording)
     - [Wrench Visulization](#end-effector-wrench-visulization)
 
@@ -68,11 +69,11 @@
  - **Run the microservice**:  
     `rosrun iiwa_cam end_effector_state_service [robot1 name] [robot2 name] ...`  
 
- ### End Effector Current Cartesian Position Inquiry
- To get the current cartesian position, there are two options:
+ ### End Effector Current Cartesian Pose Inquiry
+ To get the current cartesian Pose, there are two options:
 
   1. In a terminal:  
-    call service `/cam/iiwa/EndEffectorState`, with parameters:   
+    call service `/cam/iiwa/EndEffectorPose`, with parameters:   
     `robot_name: [robot name]`  
 
   1. In C++ program:  
@@ -81,7 +82,13 @@
       auto cart_pose = kuka.end_effector_state().get_cart_pose();
       std::cout<<cart_pose.first<<std::endl;
       ```
+ ### End Effector Current Cartesian State Inquiry
+ To get the current cartesian state:
 
+  1. In a terminal:  
+    call service `/cam/iiwa/EndEffectorState`, with parameters:   
+    `robot_name: [robot name]`  
+  
 ### End Effector Path Recording
 
   **Watchdog Machanism** （Daemon）:  
