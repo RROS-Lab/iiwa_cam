@@ -7,6 +7,7 @@
 - [End Effector State Services ](#end-effector-state-services)
     - [Current Cartesian Pose](#end-effector-current-cartesian-pose-inquiry)
     - [Current Cartesian State](#end-effector-current-cartesian-state-inquiry)
+    - [Force Sentinel](#end-effector-force-sentinal)
     - [Path Recording](#end-effector-path-recording)
     - [Wrench Visulization](#end-effector-wrench-visulization)
 
@@ -69,8 +70,8 @@
  - **Run the microservice**:  
     `rosrun iiwa_cam end_effector_state_service [robot1 name] [robot2 name] ...`  
 
- ### End Effector Current Cartesian Pose Inquiry
- To get the current cartesian Pose, there are two options:
+### End Effector Current Cartesian Pose Inquiry
+To get the current cartesian Pose, there are two options:
 
   1. In a terminal:  
     call service `/cam/iiwa/EndEffectorPose`, with parameters:   
@@ -82,12 +83,20 @@
       auto cart_pose = kuka.end_effector_state().get_cart_pose();
       std::cout<<cart_pose.first<<std::endl;
       ```
- ### End Effector Current Cartesian State Inquiry
- To get the current cartesian state:
+### End Effector Current Cartesian State Inquiry
+To get the current cartesian state ([position, velocity, wrench](../srv/EndEffectorState.srv)):
 
   1. In a terminal:  
     call service `/cam/iiwa/EndEffectorState`, with parameters:   
     `robot_name: [robot name]`  
+
+### End Effector Force Sentinal
+If the force on Z axis is beyond the limit of 10N (change this value in the [end_effector_state_service.cpp](../src/utilities/end_effector_state_service.cpp)), the service will publish the current wrench message in the topic: 
+`/cam/[robot name]/state/EndEffectorWrenchLimit`
+
+
+
+  
   
 ### End Effector Path Recording
 
@@ -145,7 +154,7 @@
 
 
   1. In RVIZ, click "`Add`" button -> in the "`By topic`" tab -> select  
-  `/[robot name]/state/EndEffectorWrench`
+  `/cam/[robot name]/state/EndEffectorWrench`
 
 
 

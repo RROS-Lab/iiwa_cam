@@ -121,8 +121,8 @@ class KukaWatchDog {
  */
 class KukaRecorder {
   friend KukaWatchDog;
-  const int WRENCH_HIS_QUEUE_SIZE = 10;  // size of wrench_history queue
-  const double WRECH_LIMIT_Z = 5e0;      // threshold of the force on Z axis
+  const int WRENCH_HIS_QUEUE_SIZE = 32;  // size of wrench_history queue
+  const double WRECH_LIMIT_Z = 10e0;     // threshold of the force on Z axis
 
  public:
   bool recorder_state = false;  // protected by mtx
@@ -168,7 +168,7 @@ class KukaRecorder {
       wrench_msg.wrench = msg.wrench;
       wrench_msg.header.frame_id = "iiwa_link_7";
 
-      if(abs(msg.wrench.force.z) >= WRECH_LIMIT_Z){
+      if (abs(msg.wrench.force.z) >= WRECH_LIMIT_Z) {
         wrench_limit_pub.publish(wrench_msg);
       }
 
@@ -296,9 +296,10 @@ class KukaRecorder {
 
     cart_pos_sub = nh.subscribe(robot_ns + "/state/CartesianPose", 20, &KukaRecorder::cart_pos_callback, this);
 
-    wrench_pub = nh.advertise<geometry_msgs::WrenchStamped>(robot_ns + "/state/EndEffectorWrench", 10);
+    wrench_pub = nh.advertise<geometry_msgs::WrenchStamped>("/cam" + robot_ns + "/state/EndEffectorWrench", 10);
 
-    wrench_limit_pub = nh.advertise<geometry_msgs::WrenchStamped>("/cam" + robot_ns + "/state/EndEffectorWrenchLimit", 10);
+    wrench_limit_pub =
+        nh.advertise<geometry_msgs::WrenchStamped>("/cam" + robot_ns + "/state/EndEffectorWrenchLimit", 2);
 
     dog = nullptr;
   }
