@@ -241,7 +241,7 @@ class Kuka {
   double m_ss_acc_lin_drop = 0;
   double m_ss_over_acc_lin_drop = 0;
 
-  bool m_print_info = false;
+  bool m_print_info = true;
 
   std::string iiwa_name;
 
@@ -412,6 +412,7 @@ class Kuka {
    */
   bool set_vel_acc_drop(const double vel = 0.1, const double acc = 0.1, const double override_acc = 1.0) {
     if (vel == m_joint_vel_drop && acc == m_joint_acc_drop && override_acc == m_joint_over_acc_drop) {
+      ROS_WARN("Returning from the if statement in iiwa.hpp");
       return true;
     } else {
       m_joint_vel_drop = vel;

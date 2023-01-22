@@ -217,122 +217,122 @@ int main(int argc, char** argv) {
 
 
   int i = 10;
-  while (i-- > 0) {
-    // Pose Goal
-    // ^^^^^^^^^
-    // We will now create a motion plan request for the right arm of the Panda
-    // specifying the desired pose of the end-effector as input.
-    planning_interface::MotionPlanRequest req;
-    planning_interface::MotionPlanResponse res;
-    geometry_msgs::PoseStamped pose;
-    pose.header.frame_id = "iiwa_link_0";
-    pose.pose.position.x = 0.3;
-    pose.pose.position.y = 0.5;
-    pose.pose.position.z = 0.1;
-    pose.pose.orientation.y = 1.0;
+  // while (i-- > 0) {
+  //   // Pose Goal
+  //   // ^^^^^^^^^
+  //   // We will now create a motion plan request for the right arm of the Panda
+  //   // specifying the desired pose of the end-effector as input.
+  //   planning_interface::MotionPlanRequest req;
+  //   planning_interface::MotionPlanResponse res;
+  //   geometry_msgs::PoseStamped pose;
+  //   pose.header.frame_id = "iiwa_link_0";
+  //   pose.pose.position.x = 0.3;
+  //   pose.pose.position.y = 0.5;
+  //   pose.pose.position.z = 0.1;
+  //   pose.pose.orientation.y = 1.0;
 
-    // A tolerance of 0.01 m is specified in position
-    // and 0.01 radians in orientation
-    std::vector<double> tolerance_pose(3, 0.01);
-    std::vector<double> tolerance_angle(3, 0.01);
+  //   // A tolerance of 0.01 m is specified in position
+  //   // and 0.01 radians in orientation
+  //   std::vector<double> tolerance_pose(3, 0.01);
+  //   std::vector<double> tolerance_angle(3, 0.01);
 
-    // We will create the request as a constraint using a helper function available
-    // from the
-    // `kinematic_constraints`_
-    // package.
-    //
-    // .. _kinematic_constraints:
-    //     http://docs.ros.org/noetic/api/moveit_core/html/cpp/namespacekinematic__constraints.html#a88becba14be9ced36fefc7980271e132
-    req.group_name = "iiwa_arm";
-    moveit_msgs::Constraints pose_goal =
-        kinematic_constraints::constructGoalConstraints("iiwa_link_7", pose, tolerance_pose, tolerance_angle);
-    req.goal_constraints.push_back(pose_goal);
+  //   // We will create the request as a constraint using a helper function available
+  //   // from the
+  //   // `kinematic_constraints`_
+  //   // package.
+  //   //
+  //   // .. _kinematic_constraints:
+  //   //     http://docs.ros.org/noetic/api/moveit_core/html/cpp/namespacekinematic__constraints.html#a88becba14be9ced36fefc7980271e132
+  //   req.group_name = "iiwa_arm";
+  //   moveit_msgs::Constraints pose_goal =
+  //       kinematic_constraints::constructGoalConstraints("iiwa_link_7", pose, tolerance_pose, tolerance_angle);
+  //   req.goal_constraints.push_back(pose_goal);
 
-    // Before planning, we will need a Read Only lock on the planning scene so that it does not modify the world
-    // representation while planning
-    {
-      planning_scene_monitor::LockedPlanningSceneRO lscene(psm);
-      /* Now, call the pipeline and check whether planning was successful. */
-      planning_pipeline->generatePlan(lscene, req, res);
-    }
+  //   // Before planning, we will need a Read Only lock on the planning scene so that it does not modify the world
+  //   // representation while planning
+  //   {
+  //     planning_scene_monitor::LockedPlanningSceneRO lscene(psm);
+  //     /* Now, call the pipeline and check whether planning was successful. */
+  //     planning_pipeline->generatePlan(lscene, req, res);
+  //   }
 
   
 
-    /* Now, call the pipeline and check whether planning was successful. */
-    /* Check that the planning was successful */
-    if (res.error_code_.val != res.error_code_.SUCCESS)
-    {
-      ROS_ERROR("Could not compute plan successfully");
-      return 0;
-    }
+  //   /* Now, call the pipeline and check whether planning was successful. */
+  //   /* Check that the planning was successful */
+  //   if (res.error_code_.val != res.error_code_.SUCCESS)
+  //   {
+  //     ROS_ERROR("Could not compute plan successfully");
+  //     return 0;
+  //   }
 
-    // Visualize the result
-    // ^^^^^^^^^^^^^^^^^^^^
-    ros::Publisher display_publisher =
-        node_handle.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
-    moveit_msgs::DisplayTrajectory display_trajectory;
+  //   // Visualize the result
+  //   // ^^^^^^^^^^^^^^^^^^^^
+  //   ros::Publisher display_publisher =
+  //       node_handle.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
+  //   moveit_msgs::DisplayTrajectory display_trajectory;
 
-    /* Visualize the trajectory */
-    ROS_INFO("Visualizing the trajectory");
-    moveit_msgs::MotionPlanResponse response;
-    res.getMessage(response);
+  //   /* Visualize the trajectory */
+  //   ROS_INFO("Visualizing the trajectory");
+  //   moveit_msgs::MotionPlanResponse response;
+  //   res.getMessage(response);
 
-    display_trajectory.trajectory_start = response.trajectory_start;
-    display_trajectory.trajectory.push_back(response.trajectory);
-    display_publisher.publish(display_trajectory);
-    visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
-    visual_tools.trigger();
+  //   display_trajectory.trajectory_start = response.trajectory_start;
+  //   display_trajectory.trajectory.push_back(response.trajectory);
+  //   display_publisher.publish(display_trajectory);
+  //   visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
+  //   visual_tools.trigger();
 
-    /* Wait for user input */
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
-  }
+  //   /* Wait for user input */
+  //   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
+  // }
 
 
-  // Using a Planning Request Adapter
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  // A planning request adapter allows us to specify a series of operations that
-  // should happen either before planning takes place or after the planning
-  // has been done on the resultant path
+  // // Using a Planning Request Adapter
+  // // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  // // A planning request adapter allows us to specify a series of operations that
+  // // should happen either before planning takes place or after the planning
+  // // has been done on the resultant path
 
-  /* First, set the state in the planning scene to the final state of the last plan */
-  robot_state = planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentStateUpdated(response.trajectory_start);
-  robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
-  moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
+  // /* First, set the state in the planning scene to the final state of the last plan */
+  // // robot_state = planning_scene_monitor::LockedPlanningSceneRO(psm)->getCurrentStateUpdated(response.trajectory_start);
+  // // robot_state->setJointGroupPositions(joint_model_group, response.trajectory.joint_trajectory.points.back().positions);
+  // // moveit::core::robotStateToRobotStateMsg(*robot_state, req.start_state);
 
-  // Now, set one of the joints slightly outside its upper limit
-  const moveit::core::JointModel* joint_model = joint_model_group->getJointModel("panda_joint3");
-  const moveit::core::JointModel::Bounds& joint_bounds = joint_model->getVariableBounds();
-  std::vector<double> tmp_values(1, 0.0);
-  tmp_values[0] = joint_bounds[0].min_position_ - 0.01;
-  robot_state->setJointPositions(joint_model, tmp_values);
+  // // // Now, set one of the joints slightly outside its upper limit
+  // // const moveit::core::JointModel* joint_model = joint_model_group->getJointModel("panda_joint3");
+  // // const moveit::core::JointModel::Bounds& joint_bounds = joint_model->getVariableBounds();
+  // // std::vector<double> tmp_values(1, 0.0);
+  // // tmp_values[0] = joint_bounds[0].min_position_ - 0.01;
+  // // robot_state->setJointPositions(joint_model, tmp_values);
 
-  req.goal_constraints.clear();
-  req.goal_constraints.push_back(pose_goal);
+  // // req.goal_constraints.clear();
+  // // req.goal_constraints.push_back(pose_goal);
 
-  // Before planning, we will need a Read Only lock on the planning scene so that it does not modify the world
-  // representation while planning
-  {
-    planning_scene_monitor::LockedPlanningSceneRO lscene(psm);
-    /* Now, call the pipeline and check whether planning was successful. */
-    planning_pipeline->generatePlan(lscene, req, res);
-  }
-  if (res.error_code_.val != res.error_code_.SUCCESS)
-  {
-    ROS_ERROR("Could not compute plan successfully");
-    return 0;
-  }
-  /* Visualize the trajectory */
-  ROS_INFO("Visualizing the trajectory");
-  res.getMessage(response);
-  display_trajectory.trajectory_start = response.trajectory_start;
-  display_trajectory.trajectory.push_back(response.trajectory);
-  /* Now you should see three planned trajectories in series*/
-  display_publisher.publish(display_trajectory);
-  visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
-  visual_tools.trigger();
+  // // // Before planning, we will need a Read Only lock on the planning scene so that it does not modify the world
+  // // // representation while planning
+  // // {
+  // //   planning_scene_monitor::LockedPlanningSceneRO lscene(psm);
+  // //   /* Now, call the pipeline and check whether planning was successful. */
+  // //   planning_pipeline->generatePlan(lscene, req, res);
+  // // }
+  // // if (res.error_code_.val != res.error_code_.SUCCESS)
+  // // {
+  // //   ROS_ERROR("Could not compute plan successfully");
+  // //   return 0;
+  // // }
+  // // /* Visualize the trajectory */
+  // // ROS_INFO("Visualizing the trajectory");
+  // // res.getMessage(response);
+  // // display_trajectory.trajectory_start = response.trajectory_start;
+  // // display_trajectory.trajectory.push_back(response.trajectory);
+  // // /* Now you should see three planned trajectories in series*/
+  // // display_publisher.publish(display_trajectory);
+  // // visual_tools.publishTrajectoryLine(display_trajectory.trajectory.back(), joint_model_group);
+  // // visual_tools.trigger();
 
-  /* Wait for user input */
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to finish the demo");
+  // // /* Wait for user input */
+  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to finish the demo");
 
 
   ROS_INFO("Done");
