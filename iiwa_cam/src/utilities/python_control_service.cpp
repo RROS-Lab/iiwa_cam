@@ -48,8 +48,12 @@ bool set_vel_acc_drop(iiwa_cam::PyJointRelVel::Request &req, iiwa_cam::PyJointRe
   if(req.joint_relative_velocity>0.2){
     ROS_WARN("The Robot will move at fast velocities");
   }
+  bool success = false;
 
-  kuka->set_vel_acc_drop(req.joint_relative_velocity, req.joint_relative_acceleration);
+  while(!success){
+    success = kuka->set_vel_acc_drop(req.joint_relative_velocity, req.joint_relative_acceleration);
+  }
+  
 
 
   res.success = true;
@@ -59,12 +63,17 @@ bool set_vel_acc_drop(iiwa_cam::PyJointRelVel::Request &req, iiwa_cam::PyJointRe
 }
 
 bool set_vel_acc(iiwa_cam::PyJointRelVel::Request &req, iiwa_cam::PyJointRelVel::Response &res) {
-  ROS_INFO_STREAM("I the Service!!!!!");
+  
   if(req.joint_relative_velocity>0.1){
     ROS_WARN("The Robot will move at fast velocities");
   }
-  kuka->set_vel_acc(req.joint_relative_velocity, req.joint_relative_acceleration);
 
+  bool success = false;
+
+  while(!success){
+    success = kuka->set_vel_acc_drop(req.joint_relative_velocity, req.joint_relative_acceleration);
+  }
+  
 
   res.success = true;
 

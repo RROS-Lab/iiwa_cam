@@ -21,6 +21,8 @@
 #include <queue>
 #include <thread>
 #include <unordered_map>
+#include <ctime>
+#include <chrono>
 
 namespace cam {
 constexpr int KUKA_WD_TIMEOUT_MIN = 5;  // minimun threshold time of watchdog
@@ -121,7 +123,7 @@ class KukaWatchDog {
  */
 class KukaRecorder {
   friend KukaWatchDog;
-  const int WRENCH_HIS_QUEUE_SIZE = 32;  // size of wrench_history queue
+  const int WRENCH_HIS_QUEUE_SIZE = 10;  // size of wrench_history queue
   const double WRECH_LIMIT_Z = 10e0;     // threshold of the force on Z axis
 
  public:
@@ -151,7 +153,7 @@ class KukaRecorder {
   geometry_msgs::Twist cart_velocity;  // protected by mtx
   int status;                          // protected by mtx
   ros::Time timestamp;
-
+  
   // protected by wrench_mtx, max size = WRENCH_HIS_QUEUE_SIZE
   std::deque<geometry_msgs::Wrench> wrench_history;
 
@@ -230,7 +232,8 @@ class KukaRecorder {
       if (++velocity_cal_cnt >= 10) {
         velocity_cal_cnt = 0;
 
-        double delta_time = (msg.poseStamped.header.stamp - timestamp).toSec();
+        // double delta_time = (msg.poseStamped.header.stamp - timestamp).toSec();
+        double delta_time = (ros::Time::now() - timestamp).toSec();
         const geometry_msgs::Pose &msg_pose = msg.poseStamped.pose;
         cart_velocity.linear.x = (msg_pose.position.x - cart_pose.position.x) / delta_time;
         cart_velocity.linear.y = (msg_pose.position.y - cart_pose.position.y) / delta_time;
@@ -258,7 +261,9 @@ class KukaRecorder {
 
       cart_pose = msg.poseStamped.pose;
       status = msg.redundancy.status;
-      timestamp = msg.poseStamped.header.stamp;
+      // timestamp = msg.poseStamped.header.stamp;
+      timestamp = ros::Time::now();
+      
 
       if (!recorder_state)
         return;
@@ -337,7 +342,7 @@ class KukaRecorder {
     res.velocity = cart_velocity;
     res.status = status;
     res.stamp = timestamp;
-
+    
     res.wrenches.resize(WRENCH_HIS_QUEUE_SIZE);
     std::lock_guard<std::mutex> lock(*wrench_mtx);
     std::copy(wrench_history.begin(), wrench_history.end(), res.wrenches.begin());
