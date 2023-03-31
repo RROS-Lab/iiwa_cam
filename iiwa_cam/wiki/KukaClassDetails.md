@@ -73,7 +73,7 @@ There are two options to control joint position of the robot:
       actionlib::SimpleActionClient<iiwa_msgs::MoveToJointPositionAction> 
         joint_pos_client("/iiwa/action/move_to_joint_position");
 
-      // action msg difinition
+      // action msg definition
       iiwa_msgs::MoveToJointPositionAction joint_pos_act;
     ```  
 
@@ -91,7 +91,7 @@ There are two options to control joint position of the robot:
       joint_pos.position.a7 = 0;
 
       // send message (BE CAREFUL WHEN YOU SEND FOLLOWING CODE!)
-      // put your hand on the emergency button, press it when neccessary
+      // put your hand on the emergency button, press it when necessary
       joint_pos_client.sendGoal(joint_pos_act.action_goal.goal);
     ```
 
@@ -122,14 +122,14 @@ There are two options to control joint position of the robot:
     and the corresponding message type is:  
     `iiwa_msgs::JointPosition`
 
-    **Note**: In this method (through topic), the robot will abadon the previous goal immediately once it get a new goal  
+    **Note**: In this method (through topic), the robot will abandon the previous goal immediately once it get a new goal  
 
 3. **Other option**  
     The interface that iiwa provide is:  
     `iiwa_ros::command::JointPosition`  
 
     However, the robot will only execute the first goal in one program/process.
-    If you want to try this method, you need to set a proper robot namesapce, e.g.:
+    If you want to try this method, you need to set a proper robot namespace, e.g.:
 
     ```cpp
       iiwa_ros::command::JointPosition cmd_jointPos;
@@ -142,7 +142,7 @@ There are two options to control joint position of the robot:
 
 ## Cartesian Position Control  
 
-### Set joint velocity and acceleration  
+### Set joint velocity and acceleration
 
 you can using joint limits to slow the velocity
 
@@ -174,7 +174,7 @@ There are two options to control cartesian position of the robot:
       actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction> 
         cartesian_pos_client("/iiwa/action/move_to_cartesian_pose");
 
-      // action msg difinition
+      // action msg definition
       iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
     ```  
 
@@ -195,7 +195,7 @@ There are two options to control cartesian position of the robot:
       poseStamped.pose.orientation.z = 0;
 
       // send message (BE CAREFUL WHEN YOU SEND FOLLOWING CODE!)
-      // put your hand on the emergency button, press it when neccessary
+      // put your hand on the emergency button, press it when necessary
       cartesian_pos_client.sendGoal(cartesian_pos_act.action_goal.goal);
     ```
 
@@ -218,7 +218,7 @@ There are two options to control cartesian position of the robot:
           ros::NodeHandle().advertise<iiwa_msgs::CartesianPose>(
               "/iiwa/command/CartesianPose", 10);
 
-      // msg difinition
+      // msg definition
       iiwa_msgs::CartesianPose cartesian_pos_msg;
     ```  
 
@@ -241,13 +241,13 @@ There are two options to control cartesian position of the robot:
       poseStamped.pose.orientation.z = 0;
       
       // send message (BE CAREFUL WHEN YOU SEND FOLLOWING CODE!)
-      // put your hand on the emergency button, press it when neccessary
+      // put your hand on the emergency button, press it when necessary
       cmd_pub.publish(cartesian_pos_msg);
 
     ```
 
     **Note**:
-    1. In this method (through topic), the robot will abadon the previous goal immediately once it get a new goal  
+    1. In this method (through topic), the robot will abaddon the previous goal immediately once it get a new goal  
 
 <span id="cart_ctrl_lin"></span>
 
@@ -277,7 +277,7 @@ There are two options to control cartesian position of the robot:
       actionlib::SimpleActionClient<iiwa_msgs::MoveToCartesianPoseAction> 
         cartesian_pos_lin_client("/iiwa/action/move_to_cartesian_pose_lin");
 
-      // action msg difinition
+      // action msg definition
       iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_lin_act;
     ```  
 
@@ -298,7 +298,7 @@ There are two options to control cartesian position of the robot:
       poseStamped.pose.orientation.z = 0;
 
       // send message (BE CAREFUL WHEN YOU SEND FOLLOWING CODE!)
-      // put your hand on the emergency button, press it when neccessary
+      // put your hand on the emergency button, press it when necessary
       cartesian_pos_lin_client.sendGoal(cartesian_pos_lin_act.action_goal.goal);
     ```
 
@@ -319,7 +319,7 @@ There are two options to control cartesian position of the robot:
           ros::NodeHandle().advertise<iiwa_msgs::CartesianPose>(
               "/iiwa/command/CartesianPoseLin", 10);
 
-      // msg difinition
+      // msg definition
       iiwa_msgs::CartesianPose cartesian_pos_msg;
     ```  
 
@@ -342,13 +342,13 @@ There are two options to control cartesian position of the robot:
       poseStamped.pose.orientation.z = 0;
       
       // send message (BE CAREFUL WHEN YOU SEND FOLLOWING CODE!)
-      // put your hand on the emergency button, press it when neccessary
+      // put your hand on the emergency button, press it when necessary
       cmd_pub.publish(cartesian_pos_msg);
 
     ```
 
     **Note**:
-    1. In this method (through topic), the robot will abadon the previous goal immediately once it get a new goal  
+    1. In this method (through topic), the robot will abandon the previous goal immediately once it get a new goal  
 
 <span id="joint_spline"></span>
 

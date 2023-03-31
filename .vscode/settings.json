@@ -72,11 +72,18 @@
     },
     "cSpell.words": [
         "actionlib",
+        "cout",
+        "endl",
         "iiwa",
         "moveit",
+        "nullspace",
         "readstr",
         "roslaunch",
+        "rosparam",
+        "rospy",
         "rosrun",
+        "rviz",
+        "srvs",
         "traj"
     ]
 }
