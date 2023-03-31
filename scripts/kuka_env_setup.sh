@@ -8,5 +8,3 @@ rosinstall .
 # mv -r ../iiwa_test src/iiwa_test
 rosdep install --from-paths src --ignore-src -r -y
 catkin build -DPYTHON_EXECUTABLE=/usr/bin/python3
-source devel/setup.bash
-
