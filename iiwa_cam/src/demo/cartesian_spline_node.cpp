@@ -13,7 +13,8 @@
 #include <cmath>
 #include <iiwa.hpp>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   ros::init(argc, argv, "cartesian_spline_node");
   ros::NodeHandle nh;
 
@@ -36,12 +37,14 @@ int main(int argc, char **argv) {
   std::vector<geometry_msgs::Pose> waypoints;
   std::vector<int> status;
 
-  if (argc > 1) {
+  if (argc > 1)
+  {
     // read cartesian trajectory from file
     std::cout << "using data from file: " << argv[1] << std::endl;
     cam::read_cart_traj(argv[1], waypoints, status);
-
-  } else {
+  }
+  else
+  {
     geometry_msgs::Pose target_pose;
     target_pose.orientation.x = 0;
     target_pose.orientation.y = 1;
@@ -56,7 +59,8 @@ int main(int argc, char **argv) {
     double centerB = target_pose.position.y;
     double radius = 0.1;
 
-    for (double th = 0.0; th < 6.28; th = th + 0.01) {
+    for (double th = 0.0; th < 6.28; th = th + 0.01)
+    {
       target_pose.position.x = centerA + radius * cos(th);
       target_pose.position.y = centerB + radius * sin(th);
       waypoints.emplace_back(target_pose);
@@ -71,5 +75,8 @@ int main(int argc, char **argv) {
 
   // stop recording end effector state
   kuka.end_effector_state().end_recording();
+
+  ros::shutdown();
+
   return 0;
 }
