@@ -17,8 +17,7 @@ int main(int argc, char* argv[]) {
   kuka.set_vel_acc(0.25, 0.5);
 
   // phase 2: pick and put
-  cout << "press Enter to continue ..." << endl;
-  getchar();
+  cam::press_to_go();
   // pick
   kuka.move_cart_ptp(-0.42, 0, 0.2, 0, 0, 1, 0);
   kuka.move_cart_ptp(0.0, 0.4, 0.2, 0, 1, 0, 0, 5);
