@@ -13,10 +13,12 @@
 
 static ros::Publisher joint_state_pub;
 
-inline void print_vec(const std::vector<double> &vec) {
+inline void print_vec(const std::vector<double> &vec)
+{
   auto vec_iter = vec.begin();
   auto vec_end_iter = vec.end();
-  while (vec_iter != vec_end_iter) {
+  while (vec_iter != vec_end_iter)
+  {
     std::cout << *vec_iter << "  ,";
     vec_iter++;
   }
@@ -24,7 +26,8 @@ inline void print_vec(const std::vector<double> &vec) {
 }
 
 inline void assign_position_to_vec(const iiwa_msgs::JointPosition &msg,
-                           std::vector<double> &vec) {
+                                   std::vector<double> &vec)
+{
   vec.resize(7);
   vec.at(0) = msg.position.a1;
   vec.at(1) = msg.position.a2;
@@ -35,15 +38,17 @@ inline void assign_position_to_vec(const iiwa_msgs::JointPosition &msg,
   vec.at(6) = msg.position.a7;
 }
 
-void joint_state_callback(const iiwa_msgs::JointPosition &msg) {
+void joint_state_callback(const iiwa_msgs::JointPosition &msg)
+{
   sensor_msgs::JointState new_msg;
   new_msg.velocity.resize(7);
   new_msg.header.stamp = ros::Time().now();
 
-  for (int i = 1; i<=7;i++) {
+  for (int i = 1; i <= 7; i++)
+  {
     std::stringstream ss;
-    ss<<"iiwa_joint_"<<i;
-    
+    ss << "iiwa_joint_" << i;
+
     new_msg.name.push_back(ss.str());
   }
   assign_position_to_vec(msg, new_msg.position);
@@ -51,14 +56,15 @@ void joint_state_callback(const iiwa_msgs::JointPosition &msg) {
   joint_state_pub.publish(new_msg);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   ros::init(argc, argv, "moveit_rviz_state_receiver_service");
   std::string name = (argc >= 2) ? argv[1] : "iiwa";
 
   ros::NodeHandle nh;
 
   ros::Subscriber moveit_sub =
-      nh.subscribe("/"+name+"/state/JointPosition", 100, joint_state_callback);
+      nh.subscribe("/" + name + "/state/JointPosition", 100, joint_state_callback);
 
   joint_state_pub = nh.advertise<sensor_msgs::JointState>("/joint_states", 100);
 

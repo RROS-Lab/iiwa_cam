@@ -77,9 +77,9 @@ bool set_vel_acc_drop(iiwa_cam::PyJointRelVel::Request &req, iiwa_cam::PyJointRe
 
 /**
  * @brief Callback function for setting the velocity and acceleration of kuka
- * 
- * @param req 
- * @param res 
+ *
+ * @param req
+ * @param res
  * @return true once finished
  */
 bool set_vel_acc(iiwa_cam::PyJointRelVel::Request &req, iiwa_cam::PyJointRelVel::Response &res)
@@ -107,12 +107,12 @@ int main(int argc, char **argv)
   kuka->set_vel_acc_lin_drop(0.1);
   kuka->set_vel_acc_drop(0.2, 0.1);
 
-  ros::ServiceServer joint_spline_srv = nh.advertiseService("cam/iiwa/command/JointSpline", joint_spline_cb);
-  ros::ServiceServer cart_ptp_drop_srv = nh.advertiseService("/cam/iiwa/command/CartesianPose", cart_ptp_drop_cb);
-  ros::ServiceServer cart_spline_srv = nh.advertiseService("/cam/iiwa/command/CartesianSpline", cart_spline_cb);
+  ros::ServiceServer joint_spline_srv = nh.advertiseService("/" + name + "/command/JointSpline", joint_spline_cb);
+  ros::ServiceServer cart_ptp_drop_srv = nh.advertiseService("/" + name + "/command/CartesianPose", cart_ptp_drop_cb);
+  ros::ServiceServer cart_spline_srv = nh.advertiseService("/" + name + "/command/CartesianSpline", cart_spline_cb);
 
-  ros::ServiceServer set_vel_acc_drop_srv = nh.advertiseService("/cam/iiwa/command/setJointRelVelAccDrop", set_vel_acc_drop);
-  ros::ServiceServer set_vel_acc_srv = nh.advertiseService("/cam/iiwa/command/setJointRelVelAcc", set_vel_acc);
+  ros::ServiceServer set_vel_acc_drop_srv = nh.advertiseService("/" + name + "/command/setJointRelVelAccDrop", set_vel_acc_drop);
+  ros::ServiceServer set_vel_acc_srv = nh.advertiseService("/" + name + "/command/setJointRelVelAcc", set_vel_acc);
 
   ros::spin();
   std::cout << "\nShut down Python Control Service" << std::endl;
