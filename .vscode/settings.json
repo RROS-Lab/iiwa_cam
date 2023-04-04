@@ -73,17 +73,25 @@
     "cSpell.words": [
         "actionlib",
         "cout",
+        "devel",
+        "DPYTHON",
+        "empy",
         "endl",
         "iiwa",
         "moveit",
         "nullspace",
         "readstr",
+        "roscore",
+        "rosdep",
         "roslaunch",
         "rosparam",
         "rospy",
         "rosrun",
+        "rostopic",
+        "RROS",
         "rviz",
         "srvs",
         "traj"
-    ]
+    ],
+    "cmake.configureOnOpen": false
 }
