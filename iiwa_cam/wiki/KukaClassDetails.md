@@ -2,22 +2,11 @@
 
 [Home](../README.md)
 
-## Content  
-
-1. [Joint Position Control](#joint_ctrl)
-1. [Cartesian Position Control](#cart_ctrl)  
-   [PTP Control](#cart_ctrl_ptp)  
-   [LIN Control](#cart_ctrl_lin)
-1. [Joint Space Spline Trajectory](#joint_spline)  
-1. [Cartesian Space Spline Trajectory](#cart_spline)  
-
-<span id="joint_ctrl"></span>
+[TOC]
 
 ## Joint Position Control  
 
 **Demo File:** [joint_space_control.cpp](../other/joint_space_control.cpp)
-
-<span id="joint_vel_ctrl"></span>
 
 ### Set joint velocity and acceleration  
 
@@ -109,7 +98,7 @@ There are two options to control joint position of the robot:
           joint_pos_client.sendGoal(joint_pos_act.action_goal.goal);
         ```
 
-    1. The unit of joint position is radiant, for example:
+    2. The unit of joint position is radiant, for example:
 
         ```cpp
           // set the 6th joint to 90 degree
@@ -138,15 +127,11 @@ There are two options to control joint position of the robot:
       cmd_jointPos.setPosition(joint_pos);
     ```
 
-<span id="cart_ctrl"></span>
-
 ## Cartesian Position Control  
 
 ### Set joint velocity and acceleration
 
 you can using joint limits to slow the velocity
-
-<span id="cart_ctrl_ptp"></span>
 
 ### Set Cartesian position goal (Point to Point, PTP)
 
@@ -249,8 +234,6 @@ There are two options to control cartesian position of the robot:
     **Note**:
     1. In this method (through topic), the robot will abaddon the previous goal immediately once it get a new goal  
 
-<span id="cart_ctrl_lin"></span>
-
 ### Set Cartesian position goal (Linear trajectory, LIN)
 
 There are two options to control cartesian position of the robot:  
@@ -350,13 +333,9 @@ There are two options to control cartesian position of the robot:
     **Note**:
     1. In this method (through topic), the robot will abandon the previous goal immediately once it get a new goal  
 
-<span id="joint_spline"></span>
-
 ## Joint Space Spline Trajectory
 
 // TODO
-
-<span id="cart_spline"></span>
 
 ## Cartesian Space Spline Trajectory
 

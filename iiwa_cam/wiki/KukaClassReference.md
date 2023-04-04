@@ -20,7 +20,7 @@ bool set_vel_acc_drop(const double vel = 0.1, const double acc = 0.1,
 ```
 
 Set the velocity, acceleration, override acceleration(refer its description in the KUKA manuals) of droppable move including
-[move_joint_ptp_drop](#movejointptpdrop), [move_cart_ptp_drop](#movecartptpdrop)
+[move_joint_ptp_drop](#move_joint_ptp_drop), [move_cart_ptp_drop](#move_cart_ptp_drop)
 
 **Demo File:**  [cartesian_lin_drop_pose_control_node.cpp](../src/demo/cartesian_lin_drop_pose_control_node.cpp)
 
@@ -35,7 +35,7 @@ bool set_vel_acc_lin_drop(const double vel = 0.1, const double acc = 0.1,
 
 Set the velocity, acceleration, override acceleration(refer its
 description in the KUKA manuals) of droppable cartesian linear move:
-[move_cart_lin_drop](#movecartlindrop)
+[move_cart_lin_drop](#move_cart_lin_drop)
 
 **Demo File:**  [cartesian_lin_drop_pose_control_node.cpp](../src/demo/cartesian_lin_drop_pose_control_node.cpp)
 
@@ -49,7 +49,7 @@ bool set_vel_acc(const double vel = 0.1, const double acc = 0.1)
 
 Set the velocity and acceleration of joint space. This function
 controls the velocity and acceleration of
-[move_joint_ptp](#movejointptp), [move_cart_ptp](#movecartptp)
+[move_joint_ptp](#move_joint_ptp), [move_cart_ptp](#move_cart_ptp)
 
 **Demo File:**  [cartesian_lin_pose_control_node.cpp](../src/demo/cartesian_lin_pose_control_node.cpp)
 
@@ -67,7 +67,7 @@ bool set_cart_traj_vel_acc(const double maxCartesianVelocity = 0.1,
 ```
 
 Set the velocity, acceleration, and jerk in cartesian space. This
-function controls the velocity, acceleration, and jerk of [exe_cart_traj](#execarttraj)
+function controls the velocity, acceleration, and jerk of [exe_cart_traj](#exe_cart_traj)
 
 **Demo File:**  [cartesian_spline_node.cpp](../src/demo/cartesian_spline_node.cpp)
 
