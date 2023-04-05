@@ -40,7 +40,7 @@
 #include <vector>
 namespace cam
 {
-  static int cnt = 0;
+  static unsigned int cnt = 0;
   constexpr int UNDEFINED_STATUS = -1;
 } // namespace cam
 
@@ -95,10 +95,10 @@ namespace cam
    */
   inline void press_to_go()
   {
-    ROS_INFO("break point %d: Press Enter to continue", ++cnt);
+    std::cout << "break point " << ++cnt << ": Press Enter to continue" << std::endl;
 
     char c;
-    while((c = getchar()) != EOF)
+    while ((c = getchar()) != EOF)
     {
       break;
     }
@@ -106,14 +106,15 @@ namespace cam
 
   inline void print_vec(const std::vector<double> &vec)
   {
-    auto vec_iter = vec.begin();
-    auto vec_end_iter = vec.end();
-    while (vec_iter != vec_end_iter)
+    for (auto it = vec.begin(); it != vec.end(); it++)
     {
-      std::cout << *vec_iter << ", ";
-      vec_iter++;
+      std::cout << *it;
+
+      if (std::next(it) != vec.end())
+        std::cout << ", ";
+      else
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
   }
 } // namespace cam
 
@@ -280,7 +281,7 @@ namespace cam
     iiwa_msgs::MoveToCartesianPoseAction build_cart_act(const geometry_msgs::Pose &pose, int status = UNDEFINED_STATUS,
                                                         double e1 = 0.0)
     {
-      // action msg difinition
+      // action msg definition
       iiwa_msgs::MoveToCartesianPoseAction cartesian_pos_act;
 
       // set goal
@@ -356,8 +357,8 @@ namespace cam
       set_cart_traj_vel_acc();
     }
 
-    void fill_joint_spline_segements(iiwa_msgs::JointSpline &spline_msg,
-                                     const std::vector<trajectory_msgs::JointTrajectoryPoint> &traj_vec)
+    void fill_joint_spline_segments(iiwa_msgs::JointSpline &spline_msg,
+                                    const std::vector<trajectory_msgs::JointTrajectoryPoint> &traj_vec)
     {
       unsigned traj_size = traj_vec.size();
 
@@ -409,7 +410,7 @@ namespace cam
 
     /**
      * @brief Get the saved frames from teaching pendant, the direct children of
-     * the world frame should be named as "P[nubmer]", e.g., "P0", "P1" ~ "P99"
+     * the world frame should be named as "P[number]", e.g., "P0", "P1" ~ "P99"
      *
      */
     KukaTreeNode *get_recorded_frames()
@@ -439,7 +440,7 @@ namespace cam
     }
 
     /**
-     * @brief Set the velocity, accelaration, override accelaration(refer its
+     * @brief Set the velocity, acceleration, override acceleration(refer its
      * description in the KUKA manuals) of droppable move including
      * move_joint_ptp_drop(), move_cart_ptp_drop()
      *
@@ -480,7 +481,7 @@ namespace cam
     }
 
     /**
-     * @brief Set the velocity, accelaration, override accelaration(refer its
+     * @brief Set the velocity, acceleration, override acceleration(refer its
      * description in the KUKA manuals) of droppable cartesian linear move:
      * move_cart_lin_drop()
      *
@@ -520,8 +521,8 @@ namespace cam
     }
 
     /**
-     * @brief Set the velocity and accelaration of joint space. This function
-     * controls the velocity and accelaration of move_joint_ptp(), move_cart_ptp()
+     * @brief Set the velocity and acceleration of joint space. This function
+     * controls the velocity and acceleration of move_joint_ptp(), move_cart_ptp()
      *
      * @param vel default = 0.1
      * @param acc default = 0.1
@@ -555,8 +556,8 @@ namespace cam
     }
 
     /**
-     * @brief Set the velocity, accelaration, and jerk in cartesian space. This
-     * function controls the velocity, accelaration, and jerk of exe_cart_traj()
+     * @brief Set the velocity, acceleration, and jerk in cartesian space. This
+     * function controls the velocity, acceleration, and jerk of exe_cart_traj()
      *
      * @param maxCartesianVelocity default = 0.1
      * @param maxOrientationVelocity default = 0.5
@@ -957,7 +958,7 @@ namespace cam
      * @param velocity joint relative speed, default = 0.1
      * @param stiff stiffness, size = 3 (cartesian impedance) or 7 (joint impedance)
      * @param damp damping, size = 3 (cartesian impedance) or 7 (joint impedance)
-     * @param mode 2: cartesian impedence  1: joint impedence  0: position control
+     * @param mode 2: cartesian impedance  1: joint impedance  0: position control
      */
     void exe_joint_traj(const std::vector<trajectory_msgs::JointTrajectoryPoint> &trajectory, const float velocity,
                         const std::vector<float> &stiff, const std::vector<float> &damp,
@@ -992,7 +993,7 @@ namespace cam
         break;
       }
 
-      fill_joint_spline_segements(spline_msg, trajectory);
+      fill_joint_spline_segments(spline_msg, trajectory);
 
       spline_msg.speed = velocity;
       spline_msg.mode = mode;
