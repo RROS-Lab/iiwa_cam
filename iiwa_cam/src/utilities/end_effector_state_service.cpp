@@ -138,7 +138,6 @@ namespace cam
   public:
     bool recorder_state = false; // protected by mtx
 
-    //! BUG: unnecessary mutex here, work for April 3rd
     std::mutex *mtx;        // mutex for recorder_state, 2 queue
     std::mutex *wrench_mtx; // mutex for wrench_history
 
@@ -485,7 +484,7 @@ static std::unordered_map<std::string, cam::KukaRecorder *> pr_map;
  *
  * @param req
  * @param res
- * @return true once the reqest is served
+ * @return true once the request is served
  */
 bool pr_callback(iiwa_cam::PathRecorder::Request &req, iiwa_cam::PathRecorder::Response &res)
 {
@@ -536,7 +535,7 @@ bool pr_callback(iiwa_cam::PathRecorder::Request &req, iiwa_cam::PathRecorder::R
  *
  * @param req
  * @param res
- * @return true once the reqest is served
+ * @return true once the request is served
  */
 bool ee_pos_callback(iiwa_cam::EndEffectorPose::Request &req, iiwa_cam::EndEffectorPose::Response &res)
 {
@@ -563,7 +562,7 @@ bool ee_pos_callback(iiwa_cam::EndEffectorPose::Request &req, iiwa_cam::EndEffec
  *
  * @param req
  * @param res
- * @return true once the reqest is served
+ * @return true once the request is served
  */
 bool ee_state_callback(iiwa_cam::EndEffectorState::Request &req, iiwa_cam::EndEffectorState::Response &res)
 {
@@ -611,6 +610,5 @@ int main(int argc, char *argv[])
   std::cout << "\nShut down Kuka End Effector State Service" << std::endl;
   // do cleaning
 
-  ros::shutdown();
   return 0;
 }
