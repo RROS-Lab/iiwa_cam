@@ -75,6 +75,7 @@
         "cout",
         "devel",
         "DPYTHON",
+        "Eigen",
         "empy",
         "endl",
         "iiwa",
