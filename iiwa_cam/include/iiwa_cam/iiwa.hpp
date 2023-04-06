@@ -116,6 +116,19 @@ namespace cam
         std::cout << std::endl;
     }
   }
+
+  inline void assign_position_to_vec(const iiwa_msgs::JointPosition &msg,
+                                     std::vector<double> &vec)
+  {
+    vec.resize(7);
+    vec.at(0) = msg.position.a1;
+    vec.at(1) = msg.position.a2;
+    vec.at(2) = msg.position.a3;
+    vec.at(3) = msg.position.a4;
+    vec.at(4) = msg.position.a5;
+    vec.at(5) = msg.position.a6;
+    vec.at(6) = msg.position.a7;
+  }
 } // namespace cam
 
 namespace cam

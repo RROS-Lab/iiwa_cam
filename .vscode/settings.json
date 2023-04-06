@@ -81,6 +81,7 @@
         "iiwa",
         "moveit",
         "nullspace",
+        "planningsceneinterface",
         "readstr",
         "roscore",
         "rosdep",
