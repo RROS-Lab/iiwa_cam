@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   moveit_ros_planning_interface
+  moveit_visual_tools
   moveit_msgs
 )
 
@@ -116,7 +117,7 @@ catkin_package(
 #  LIBRARIES ${PROJECT_NAME}
  CATKIN_DEPENDS 
   roscpp std_msgs iiwa_msgs actionlib_msgs actionlib 
-  moveit_ros_planning_interface moveit_msgs
+  moveit_ros_planning_interface moveit_visual_tools moveit_msgs
 #  DEPENDS system_lib
 )
 
