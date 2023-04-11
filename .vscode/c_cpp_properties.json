@@ -8,10 +8,10 @@
             "includePath": [
                 "/opt/ros/noetic/include/**",
                 "/usr/include/**",
-                "/home/cam/iiwa_ws/devel/**",
-                "/home/cam/iiwa_ws/src/iiwa_cam/iiwa_cam/include/**",
-                "/home/cam/iiwa_ws/src/iiwa_stack_cam/iiwa_hw/include/**",
-                "/home/cam/iiwa_ws/src/iiwa_stack_cam/iiwa_ros/include/**"
+                "~/iiwa_ws/devel/**",
+                "~/iiwa_ws/src/iiwa_cam/iiwa_cam/include/**",
+                "~/iiwa_ws/src/iiwa_stack_cam/iiwa_hw/include/**",
+                "~/iiwa_ws/src/iiwa_stack_cam/iiwa_ros/include/**"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
