@@ -1,3 +1,4 @@
+rm -rf ~/iiwa_ws/src/iiwa_cam
 mkdir -p ~/iiwa_ws/src/iiwa_cam
 cp -r iiwa_cam ~/iiwa_ws/src/iiwa_cam/
 cp -r iiwa_moveit_cam ~/iiwa_ws/src/iiwa_cam/

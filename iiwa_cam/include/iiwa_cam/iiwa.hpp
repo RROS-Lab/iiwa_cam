@@ -91,7 +91,6 @@ namespace cam
 
   /**
    * @brief Get input from the keyboard and continue the work
-   * !BUG: signal handler in iiwa_cam/src/demo/get_frames_node.cpp  sigint_handler(int sig)
    */
   inline void press_to_go()
   {
