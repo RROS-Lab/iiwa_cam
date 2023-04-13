@@ -82,6 +82,7 @@
         "moveit",
         "nullspace",
         "planningsceneinterface",
+        "pluginlib",
         "readstr",
         "roscore",
         "rosdep",

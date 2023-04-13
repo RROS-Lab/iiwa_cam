@@ -184,6 +184,10 @@ add_executable(moveit_plan_and_exec_node
   src/demo/moveit_plan_and_exec_node.cpp
 )
 
+add_executable(rviz_moveit_setup_node
+  src/demo/rviz_moveit_setup_node.cpp
+)
+
 # utility files
 add_executable(end_effector_state_service
   src/utilities/end_effector_state_service.cpp
@@ -254,6 +258,10 @@ add_dependencies(moveit_plan_and_exec_node
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
+add_dependencies(rviz_moveit_setup_node
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
 add_dependencies(end_effector_state_service
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
@@ -306,6 +314,10 @@ target_link_libraries(joint_pose_control_node
 )
 
 target_link_libraries(moveit_plan_and_exec_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(rviz_moveit_setup_node
   ${catkin_LIBRARIES}
 )
 # utility files
