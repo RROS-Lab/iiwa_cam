@@ -1,18 +1,20 @@
 # Kuka ROS Tutorial - Setup
+
 ## Preparation
 
-This system requires 2 computers (Windows + Ubuntu). 
+This system requires 2 computers (Windows + Ubuntu).
 
 - Sunrise Cabinet: controller box of robot arm
-- ROS machine: the Ubuntu computer with ROS, iiwa_stack 
+- ROS machine: the Ubuntu computer with ROS, iiwa_stack
 - Sunrise Workbench: workbench running on the Windows computer, works as a middleman
 
 You need to get the IP address of:
+
 - Sunrise Cabinet (e.g. `192.168.10.118` or `192.168.10.116`)
 - ROS machine (run `ifconfig` in terminal to get the IP)
 
-
 ## Reference
+
 This guide is based on [iiwa's wiki](https://github.com/IFL-CAMP/iiwa_stack/wiki), with some part adapted to RROS Lab's environment
 
 ## Setup  
@@ -20,79 +22,75 @@ This guide is based on [iiwa's wiki](https://github.com/IFL-CAMP/iiwa_stack/wiki
 ### Steps
 
 1. Connect an ethernet cable between the **X66 port** of the Sunrise Cabinet and your **ROS** machine
-1. By default the **Sunrise** Cabinet IP address is `192.168.10.118`. Setup the network interface on the **ROS** machine to be in the same subnet. (e.g. `192.168.10.101`). Ping the **Sunrise** Cabinet from your **ROS** machine to check that everything is fine.
-1. [Clone, build and setup iiwa_stack on your ROS machine.](#ros_side)
-1. [Clone and setup a Sunrise Project with iiwa_stack on your SUNRISE Cabinet.](#sunrise_side)
+2. By default the **Sunrise** Cabinet IP address is `192.168.10.118`. Setup the network interface on the **ROS** machine to be in the same subnet. (e.g. `192.168.10.101`). Ping the **Sunrise** Cabinet from your **ROS** machine to check that everything is fine.
+3. [Clone, build and setup iiwa_stack on your ROS machine.](#ros-machine-side)
+4. [Clone and setup a Sunrise Project with iiwa_stack on your SUNRISE Cabinet.](#sunrise-workbench-side)
 
-<span id="ros_side"></span>
 ### ROS Machine side
 
-1. **Install ROS NOETIC** (if not already there) as described at [here](http://wiki.ros.org/melodic/Installation/Ubuntu).   
-   It's also a good idea to install the python catkin tools     
+1. **Install ROS NOETIC** (if not already there) as described at [here](https://wiki.ros.org/noetic/Installation/Ubuntu).
+   It's also a good idea to install the python catkin tools
    `sudo apt-get install python-catkin-tools`
 
-1. **Setup the ROS IP** :    
+2. **Setup the ROS IP** :
 Open .bashrc file  
-`gedit ~/.bashrc &`    
-and append these two lines at the end     
-`export ROS_IP=xxx.xxx.xxx.xxx`      
-`export ROS_MASTER_URI=http://$ROS_IP:11311`   
+`gedit ~/.bashrc &`
+and append these two lines at the end
+`export ROS_IP=xxx.xxx.xxx.xxx`
+`export ROS_MASTER_URI=http://$ROS_IP:11311`
 Where *xxx.xxx.xxx.xxx* is the **IP address** of your **ROS** machine, which we previously set to be under the same subnet of your **SUNRISE Cabinet** (e.g. 192.168.10.101).  
 (after adding above two lines in .bashrc you can only run `roscore` with your computer connected to the subnet, if you want to run `roscore` in other network, i.e., your IP address changed, you need to comment out these two lines and do the step bellow)  
-Then run       
+Then run
 `source ~/.bashrc`
 
-1. **Setup ROS workspace**   
+3. **Setup ROS workspace**
 run command  
 `sh scripts/kuka_env_setup.sh`  
-**NOTE** : this command will create a new ros workspace in directory `~/` if you want set your worksapce somewhere else, skip this step; otherwise, do this step and skip the steps bellow to [Sunrise side](#sunrise_side)
+**NOTE** : this command will create a new ros workspace in directory `~/` if you want set your workspace somewhere else, skip this step; otherwise, do this step and skip the steps bellow to [Sunrise side](#sunrise-workbench-side)
 
-1. **Clone iiwa_stack repository to your workspace** (you can omit the first 2 commands if you already have one) :   
-`mkdir -p iiwa_stack_ws/src && cd ..`          
-`catkin_init_workspace`   
-`git clone https://github.com/RROS-Lab/iiwa_stack_cam.git src/iiwa_stack_cam` 
+4. **Clone iiwa_stack repository to your workspace** (you can omit the first 2 commands if you already have one) :
+`mkdir -p iiwa_stack_ws/src && cd ..`
+`catkin_init_workspace`
+`git clone https://github.com/RROS-Lab/iiwa_stack_cam.git src/iiwa_stack_cam`
 
-
-1. **Download the dependences** :      
+5. **Download the dependencies** :
 `rosdep install --from-paths src --ignore-src -r -y`
 
-1. **Build the workspace** :  
+6. **Build the workspace** :  
 `catkin build`  
-if you failed with error message:   
+if you failed with error message:
 *Unable to find either executable 'empy' or Python module 'em'...  
 try installing the package 'python-empy'*  
 try:  ([Ref](https://github.com/ysl208/iRoPro/issues/59))  
 `catkin build -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.7m`  
 
+7. **Source the workspace** :
+`source devel/setup.bash`
 
-1. **Source the workspace** :   
-`source devel/setup.bash`    
-
-<span id="sunrise_side"></span>
 ### Sunrise Workbench Side
 
 1. **Basic Sunrise Project Setup** :  
-  - Within **Sunrise Workbench**, create a **Sunrise project** or load an existing one from the controller (default IP: 172.31.1.147).
-  - Open the **StationSetup.cat** file
-  - Select the **Software** tab
-  - Enable the Servo Motion packages:
-    - Direct Servo Motion Extension
-    - Smart Servo Motion Extension
-    - Smart Servo Linear Motion Extension
-  - Save and apply changes(you might need to reinstall the project)
 
-2. **Add `iiwa_stack` (more precisely the content of `iiwa_ros_java`) to the Sunrise project** :      
+   - Within **Sunrise Workbench**, create a **Sunrise project** or load an existing one from the controller (default IP: 172.31.1.147).
+   - Open the **StationSetup.cat** file
+   - Select the **Software** tab
+   - Enable the Servo Motion packages:
+     - Direct Servo Motion Extension
+     - Smart Servo Motion Extension
+     - Smart Servo Linear Motion Extension
+   - Save and apply changes(you might need to reinstall the project)
 
-    From now on, for simplicity, we will use two **pseudo** shell variables:    
-      - **IIWA_STACK_DIR**: the path to the root of the `iiwa_stack` project, you probably cloned it into this folder.    
-      - **SUNRISE_PROJECT_DIR**: the path to the root of your **Sunrise project** (somewhere in your file system under your **Sunrise Workspace**)     
+2. **Add `iiwa_stack` (more precisely the content of `iiwa_ros_java`) to the Sunrise project** :
+
+    From now on, for simplicity, we will use two **pseudo** shell variables:
+      - **IIWA_STACK_DIR**: the path to the root of the `iiwa_stack` project, you probably cloned it into this folder.
+      - **SUNRISE_PROJECT_DIR**: the path to the root of your **Sunrise project** (somewhere in your file system under your **Sunrise Workspace**)
 
     Remember, these are **NOT** real variables, we use them just to shorten things, use the full path!
 
-
       - Copy the content of `$IIWA_STACK_DIR\iiwa_ros_java\src` inside the `src` folder of the **Sunrise project**.
       - Copy the folder `$IIWA_STACK_DIR\iiwa_ros_java\ROSJavaLib` into the root of the **Sunrise project**.
-      - Inside **Sunrise Workbench** select all the files inside _ROSJavaLib_, right click and choose _Build Path_ -> Add to Build Path...
+      - Inside **Sunrise Workbench** select all the files inside *ROSJavaLib*, right click and choose *Build Path* -> Add to Build Path...
 
 3. **Setup the ProcessData Configuration** :  
 
@@ -114,16 +112,19 @@ try:  ([Ref](https://github.com/ysl208/iRoPro/issues/59))
         </processDataContainer>
     </RoboticsAPIData>
     ```
+
     **You need to check the following items, if they do not match your configuration, change them**
     - ROS Master IP (the IP of your ROS machine)
     - Robot IP (the IP of your Sunrise Cabinet)
 
     e.g., if the IP of your Sunrise Cabinet is `192.168.10.116`. Inside the `processDataContainer` field, you need to change  
+
     ```xml
     <processData dataType="java.lang.String" defaultValue="192.168.10.118" displayName="Robot IP" editableOnHmi="false" id="robot_ip" value="192.168.10.118" visibleOnHmi="false"/>
     ```
 
     to:  
+
     ```xml
     <processData dataType="java.lang.String" defaultValue="192.168.10.118" displayName="Robot IP" editableOnHmi="false" id="robot_ip" value="192.168.10.116" visibleOnHmi="false"/>
     ```
@@ -133,10 +134,11 @@ try:  ([Ref](https://github.com/ysl208/iRoPro/issues/59))
     If your `RoboticsAPI.data.xml` file contains or will contain something else, adjust it accordingly to your needs maintaining the items above inside the `processDataContainer` field.
 
 4. **DONE** :  
-Whatever option you choose you should now have a **Sunrise project** without any error.     
-You can now _install_ it (_Station Setup_ -> _Installation_) and then synchronize it.
+Whatever option you choose you should now have a **Sunrise project** without any error.
+You can now *install* it (*Station Setup* -> *Installation*) and then synchronize it.
 
 ## Run Application on Teaching Pendant
+
 1. Switch Operating Mode to Auto Mode  
     - turn Emergency Stop button (red button on the top of teaching pendant) clockwise to release it
     - turn the little key on teaching pendant clockwise
@@ -153,8 +155,8 @@ You can now _install_ it (_Station Setup_ -> _Installation_) and then synchroniz
     - try `rostopic list` to see if there are iiwa topics
 1. Stop ROSSmartServo Application before Turning off ROS Master Node
     - if you turn off ROS Master Node before ROSSmartServo application, you may need to restart the kuka controller
-          
 
-## ❗ __IMPORTANT__ ❗   
-Have you already set your __Safety Configuration__? If not, you should!  
-Mind that every time you change your __Safety Configuration__ you need to reinstall the project.       
+## ❗ **IMPORTANT** ❗
+
+Have you already set your **Safety Configuration**? If not, you should!  
+Mind that every time you change your **Safety Configuration** you need to reinstall the project.

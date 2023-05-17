@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "${default}",
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "includePath": [
+                "/opt/ros/noetic/include/**",
+                "/usr/include/**",
+                "~/iiwa_ws/devel/**",
+                "~/iiwa_ws/src/iiwa_cam/iiwa_cam/include/**",
+                "~/iiwa_ws/src/iiwa_stack_cam/iiwa_hw/include/**",
+                "~/iiwa_ws/src/iiwa_stack_cam/iiwa_ros/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}

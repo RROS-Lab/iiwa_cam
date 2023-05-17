@@ -1,0 +1,9 @@
+<launch>
+  <arg name="moveit_controller_manager" value="fake"/>
+
+  <include file="$(find iiwa_moveit_amazon)/launch/demo.launch">
+    <arg name="moveit_controller_manager" value="$(arg moveit_controller_manager)" />
+  </include>
+  
+  <node pkg="iiwa_cam" type="rviz_moveit_setup_node" name="rviz_moveit_setup_node" output="screen"/>
+</launch>

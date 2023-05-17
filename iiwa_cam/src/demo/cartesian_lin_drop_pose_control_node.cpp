@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
   std::string name = (argc >= 2) ? argv[1] : "iiwa";
 
   cam::Kuka kuka(name);
-  kuka.set_vel_acc_drop(0.5);
+  kuka.set_vel_acc_drop(0.1);
 
   geometry_msgs::Pose pose;
   pose.position.x = 0.48;

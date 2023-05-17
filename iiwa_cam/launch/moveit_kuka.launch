@@ -1,11 +1,15 @@
 <launch>
+  <arg name="moveit_controller_manager" value="fake"/>
 
   <!-- run a modified moveit demo lauch file -->
   <!-- the node "joint_state_publisher" is disabled -->
-  <include file="$(find iiwa_moveit_cam)/launch/demo.launch"/>
-
-  <node pkg="iiwa_cam" type="moveit_rviz_exec_service" name="moveit_rviz_exec_service" output="screen"/>
+  <include file="$(find iiwa_moveit_cam)/launch/demo.launch">
+    <arg name="moveit_controller_manager" value="$(arg moveit_controller_manager)" />
+  </include>
   
-  <node pkg="iiwa_cam" type="moveit_rviz_state_receiver_service" name="moveit_rviz_state_receiver_service" output="screen"/>
-
+  <node pkg="iiwa_cam" type="moveit_rviz_exec_service" name="moveit_rviz_exec_service" args="" output="screen"/>
+  
+  <node pkg="iiwa_cam" type="moveit_rviz_state_receiver_service" name="moveit_rviz_state_receiver_service" args="" output="screen"/>
+  
+  <node pkg="iiwa_cam" type="end_effector_state_service" name="end_effector_state_service" args="iiwa" output="screen"/>
 </launch>
