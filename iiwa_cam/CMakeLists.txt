@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   roscpp
   std_msgs
+  message_generation
   moveit_ros_planning_interface
   moveit_visual_tools
   moveit_msgs
@@ -62,7 +63,14 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate services in the 'srv' folder
 add_service_files(
-  DIRECTORY srv
+  FILES
+    EndEffectorPose.srv
+    EndEffectorState.srv
+    PathRecorder.srv
+    PyCartesianPose.srv
+    PyCartesianSpline.srv
+    PyJointRelVel.srv
+    PyJointSpline.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -75,9 +83,9 @@ add_service_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  std_msgs
-  geometry_msgs
-  moveit_msgs
+    std_msgs
+    geometry_msgs
+    moveit_msgs
 )
 
 ################################################
